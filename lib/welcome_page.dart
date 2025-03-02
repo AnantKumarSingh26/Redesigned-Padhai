@@ -39,7 +39,7 @@ class _WelcomePageState extends State<WelcomePage> {
                   style: TextStyle(
                     fontSize: isTablet ? 40 : 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
+                    color: Colors.blue,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -60,7 +60,7 @@ class _WelcomePageState extends State<WelcomePage> {
                   style: TextStyle(
                     fontSize: isTablet ? 24 : 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
+                    color: Colors.blue,
                   ),
                   textAlign: TextAlign.center,
                 ),

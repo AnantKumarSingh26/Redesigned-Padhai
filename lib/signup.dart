@@ -18,9 +18,7 @@ class _SignupPageState extends State<SignupPage> {
     final isTablet = screenWidth > 600; // Adjust breakpoint for tablets
 
     return Scaffold(
-      appBar: AppBar(
-        leading: Icon(Icons.keyboard_double_arrow_left_outlined,color: Colors.blue,),
-      ),
+      
       backgroundColor: Colors.white,
       body: Padding(
         padding: EdgeInsets.all(isTablet ? 30.0 : 20.0), // Responsive padding
@@ -67,20 +65,23 @@ class _SignupPageState extends State<SignupPage> {
                 },
               ),
               const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+              SizedBox(
+                width: 140,
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    minimumSize: Size(double.infinity, isTablet ? 50 : 50), // Responsive button size
                   ),
-                  minimumSize: Size(double.infinity, isTablet ? 60 : 50), // Responsive button size
-                ),
-                child: Text(
-                  'Sign up',
-                  style: TextStyle(
-                    fontSize: isTablet ? 20 : 18, // Responsive font size
-                    color: Colors.white,
+                  child: Text(
+                    'Sign up',
+                    style: TextStyle(
+                      fontSize: isTablet ? 20 : 18, // Responsive font size
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),

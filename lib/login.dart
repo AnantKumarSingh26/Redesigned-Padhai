@@ -18,7 +18,8 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Center( // Center the app bar title
+        title: const Center(
+          // Center the app bar title
           child: Text(
             'Padhai',
             style: TextStyle(
@@ -28,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-        backgroundColor: Colors.deepPurpleAccent,
+        backgroundColor: Colors.blueAccent,
         leading: IconButton(
           icon: const Icon(
             Icons.keyboard_double_arrow_left_outlined,
@@ -46,23 +47,33 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: isTablet ? 50 : 30), // Responsive spacing
-              const Text(
-                'Login',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Poppins',
+              Center(
+                child: const Text(
+                  'Login',
+                  style: TextStyle(
+                    fontSize: 38,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                    color: Colors.blueAccent,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
-                "Welcome back champ, you've been missed!",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+              Center(
+                child: const Text(
+                  "Welcome back champ, you've been missed!",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color.fromARGB(255, 21, 113, 233),
+                    fontWeight: FontWeight.bold
+                  ),
+                ),
               ),
               const SizedBox(height: 30),
               _UsernameTextField(), // Separate widget for username field
               const SizedBox(height: 20),
-              _PasswordTextField( // Separate widget for password field
+              _PasswordTextField(
+                // Separate widget for password field
                 obscureText: _obscureText,
                 onPressed: () {
                   setState(() {
@@ -70,36 +81,35 @@ class _LoginPageState extends State<LoginPage> {
                   });
                 },
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               Row(
-                mainAxisAlignment:MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  
                   TextButton(
                     onPressed: () {},
                     child: const Text(
                       'Forgot your password?',
-                    
+
                       style: TextStyle(
-                        color: Colors.deepPurpleAccent,
+                        color: Colors.redAccent,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 15,),
+              const SizedBox(height: 15),
               Center(
                 child: ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurpleAccent,
+                    backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     padding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 40 : 20,
-                      vertical: 16,
+                      horizontal: isTablet ? 40 : 40,
+                      vertical: 10,
                     ),
                   ),
                   child: const Text(
@@ -126,7 +136,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: const Text(
                     'Create new Account',
                     style: TextStyle(
-                      color: Colors.deepPurpleAccent,
+                      color: Colors.blue,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -182,9 +192,7 @@ class _UsernameTextField extends StatelessWidget {
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.person),
         labelText: 'Username',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -207,9 +215,7 @@ class _PasswordTextField extends StatelessWidget {
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.lock),
         labelText: 'Password',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         suffixIcon: IconButton(
           icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility),
           onPressed: onPressed,

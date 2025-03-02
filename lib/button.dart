@@ -44,7 +44,7 @@ class _CircularAnimatedButtonState extends State<CircularAnimatedButton> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: Colors.deepPurple.withOpacity(0.5),
+                  color: Colors.blueAccent.withOpacity(0.5),
                   width: 5,
                 ),
               ),
