@@ -88,10 +88,10 @@ class _SignupPageState extends State<SignupPage> {
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () {
-                   Navigator.push(
+                   Navigator.pop(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const LoginPage(),
+                        builder: (context) => const SignupPage(),
                       ),
                     );
                 },
@@ -125,10 +125,10 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                    IconButton(
                     onPressed: () {},
-                    icon: Image.network(
-                      'https://img.icons8.com/?size=100&id=V5cGWnc9R4xj&format=png&color=000000',
-                      width: isTablet ? 30 : 25, // Responsive icon size
-                      height: isTablet ? 30 : 25,
+                    icon: Image.asset(
+                    'assets/images/google.png',
+                      width: isTablet ? 40 : 30, // Responsive icon size
+                      height: isTablet ? 40 : 30,
                     ),
                   ),
                 ],

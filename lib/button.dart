@@ -55,7 +55,7 @@ class _CircularAnimatedButtonState extends State<CircularAnimatedButton> {
             width: widget.isPressed ? 65 : 75,
             height: widget.isPressed ? 65 : 75,
             decoration: BoxDecoration(
-              color: widget.isPressed ? Colors.deepPurple[300] : Colors.deepPurple,
+              color: widget.isPressed ? Color(0xFF1F41BB) : Color(0xFF1F41BB),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(

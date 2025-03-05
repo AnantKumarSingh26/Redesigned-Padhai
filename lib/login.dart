@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:padhai/signup.dart';
+import 'package:padhai/student_dashbord.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,17 +19,15 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Center(
-          // Center the app bar title
-          child: Text(
-            'Padhai',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+        title: Text(
+          'Padhai',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
+        centerTitle: true,
         backgroundColor: Colors.blueAccent,
         leading: IconButton(
           icon: const Icon(
@@ -36,7 +35,10 @@ class _LoginPageState extends State<LoginPage> {
             color: Colors.white, // White back arrow
           ),
           onPressed: () {
-            // Handle back button press
+            Navigator.pop(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            );
           },
         ),
       ),
@@ -54,18 +56,19 @@ class _LoginPageState extends State<LoginPage> {
                     fontSize: 38,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Poppins',
-                    color: Colors.blueAccent,
+                    color: Color(0xFF1F41BB),
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               Center(
                 child: const Text(
                   "Welcome back champ, you've been missed!",
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Color.fromARGB(255, 21, 113, 233),
-                    fontWeight: FontWeight.bold
+                    fontSize: 20,
+                    color: Color.fromARGB(157, 92, 106, 125),
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -101,7 +104,14 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 15),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const StudentDashboard(),
+                      ),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(
@@ -168,12 +178,13 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   IconButton(
                     onPressed: () {},
-                    icon: Image.network(
-                      'https://img.icons8.com/?size=100&id=V5cGWnc9R4xj&format=png&color=000000',
-                      width: isTablet ? 30 : 23, // Responsive icon size
-                      height: isTablet ? 30 : 23,
+                    icon: Image.asset(
+                    'assets/images/google.png',
+                      width: isTablet ? 40 : 30, // Responsive icon size
+                      height: isTablet ? 40 : 30,
                     ),
                   ),
+                
                 ],
               ),
             ],
