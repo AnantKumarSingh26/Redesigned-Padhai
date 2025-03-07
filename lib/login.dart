@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:padhai/decide.dart';
 import 'package:padhai/signup.dart';
-import 'package:padhai/student_dashbord.dart';
+// import 'package:padhai/student_dashbord.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -108,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const StudentDashboard(),
+                        builder: (context) =>  DashboardSelectionScreen(),
                       ),
                     );
                   },
