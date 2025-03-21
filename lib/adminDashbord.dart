@@ -26,7 +26,7 @@ class AdminDashboard extends StatelessWidget {
             const SizedBox(height: 20),
             GridView.builder(
               shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
+              // physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: isTablet ? 2 : 1,
                 crossAxisSpacing: 16,
@@ -43,7 +43,7 @@ class AdminDashboard extends StatelessWidget {
       ),
     );
   }
-
+//Admin Tool method declaration
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
