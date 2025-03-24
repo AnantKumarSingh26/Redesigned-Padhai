@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:padhai/course_catalog.dart';
+import 'manage_user_accounts.dart'; // Added import for UserManagementScreen
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -43,7 +45,8 @@ class AdminDashboard extends StatelessWidget {
       ),
     );
   }
-//Admin Tool method declaration
+
+  //Admin Tool method declaration
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
@@ -67,13 +70,26 @@ class _AdminOptionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          // Navigate to the respective admin tool page
-          print('Selected: ${option.title}');
+          if (option.title == 'Manage User Accounts') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const UserManagementScreen(),
+              ),
+            );
+          } else if (option.title == 'Manage Course Catalog') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CourseManagementScreen(),
+              ),
+            );
+          } else {
+            print('Selected: ${option.title}');
+          }
         },
         borderRadius: BorderRadius.circular(12),
         child: Container(
@@ -81,7 +97,10 @@ class _AdminOptionCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: LinearGradient(
-              colors: [option.color.withOpacity(0.1), option.color.withOpacity(0.3)],
+              colors: [
+                option.color.withOpacity(0.1),
+                option.color.withOpacity(0.3),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -105,10 +124,7 @@ class _AdminOptionCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       option.description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                     ),
                   ],
                 ),
@@ -144,7 +160,8 @@ final List<AdminOption> _adminOptions = [
   ),
   AdminOption(
     title: 'Generate Reports',
-    description: 'Generate detailed reports on users, courses, and system usage.',
+    description:
+        'Generate detailed reports on users, courses, and system usage.',
     icon: Icons.bar_chart,
     color: Colors.purple,
   ),
