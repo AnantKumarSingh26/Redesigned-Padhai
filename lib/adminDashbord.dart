@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:padhai/course_catalog.dart';
 import 'manage_user_accounts.dart'; // Added import for UserManagementScreen
 
 class AdminDashboard extends StatelessWidget {
@@ -20,7 +19,9 @@ class AdminDashboard extends StatelessWidget {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(isTablet ? 24 : 16),
+        padding: EdgeInsets.all(
+          isTablet ? 24 : 16,
+        ), // Adjust padding for responsiveness
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -28,12 +29,13 @@ class AdminDashboard extends StatelessWidget {
             const SizedBox(height: 20),
             GridView.builder(
               shrinkWrap: true,
-              // physics: const NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: isTablet ? 2 : 1,
+                crossAxisCount:
+                    isTablet ? 2 : 1, // Adjust grid columns for responsiveness
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: isTablet ? 2.5 : 3,
+                childAspectRatio: isTablet ? 2.5 : 3, // Adjust aspect ratio
               ),
               itemCount: _adminOptions.length,
               itemBuilder: (context, index) {
@@ -78,13 +80,6 @@ class _AdminOptionCard extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => const UserManagementScreen(),
-              ),
-            );
-          } else if (option.title == 'Manage Course Catalog') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const CourseManagementScreen(),
               ),
             );
           } else {
