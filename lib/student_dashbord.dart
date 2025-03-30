@@ -19,24 +19,38 @@ class StudentDashboard extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+        centerTitle: true,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () {},
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const ExpandableStudentCard(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              const StudentProfileCard(),
+              const SizedBox(height: 32),
               
-              _buildSectionHeader('My Courses', 'View All'),
-              const SizedBox(height: 12),
-              HorizontalCoursesList(courses: myCourses, showProgress: true),
-              const SizedBox(height: 24),
+              _buildSectionHeader('My Courses', 'View All', context),
+              const SizedBox(height: 16),
+              CourseHorizontalList(courses: myCourses, showProgress: true),
+              const SizedBox(height: 32),
               
-              _buildSectionHeader('Recommended For You', 'See More'),
-              const SizedBox(height: 12),
-              HorizontalCoursesList(courses: recommendedCourses, showProgress: false),
+              _buildSectionHeader('Recommended Courses', 'See All', context),
+              const SizedBox(height: 16),
+              CourseHorizontalList(courses: recommendedCourses, showProgress: false),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -44,7 +58,7 @@ class StudentDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title, String action) {
+  Widget _buildSectionHeader(String title, String action, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
@@ -52,18 +66,15 @@ class StudentDashboard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+            style: Theme.of(context).textTheme.headline6?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
           ),
-          GestureDetector(
-            onTap: () {},
+          TextButton(
+            onPressed: () {},
             child: Text(
               action,
               style: const TextStyle(
-                fontSize: 14,
                 color: Colors.blue,
                 fontWeight: FontWeight.w500,
               ),
@@ -75,118 +86,96 @@ class StudentDashboard extends StatelessWidget {
   }
 }
 
-class ExpandableStudentCard extends StatefulWidget {
-  const ExpandableStudentCard({super.key});
-
-  @override
-  State<ExpandableStudentCard> createState() => _ExpandableStudentCardState();
-}
-
-class _ExpandableStudentCardState extends State<ExpandableStudentCard> {
-  bool _isExpanded = false;
+class StudentProfileCard extends StatelessWidget {
+  const StudentProfileCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => setState(() => _isExpanded = !_isExpanded),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        width: double.infinity,
-        height: _isExpanded ? 200 : 160,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'STUDENT ID',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.blue.shade50,
                 ),
-                const Icon(Icons.school, color: Colors.white, size: 24),
-              ],
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'John Doe',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+                child: const Icon(
+                  Icons.person_outline,
+                  size: 30,
+                  color: Colors.blue,
+                ),
               ),
-            ),
-            Text(
-              'Computer Science',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.9),
-                fontSize: 14,
-              ),
-            ),
-            if (_isExpanded) ...[
-              const SizedBox(height: 20),
-              Divider(color: Colors.white.withOpacity(0.3)),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildCardDetail('ID', '2023001'),
-                  _buildCardDetail('Batch', '2023-2027'),
-                  _buildCardDetail('Semester', 'III'),
-                ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'John Doe',
+                      style: Theme.of(context).textTheme.headline6?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Computer Science',
+                      style: Theme.of(context).textTheme.subtitle2?.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
+                    ),
+                  ],
+                ),
               ),
             ],
-            const Spacer(),
-            Text(
-              'Tap to ${_isExpanded ? 'collapse' : 'expand'}',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
-                fontSize: 10,
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 20),
+          const Divider(height: 1),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildInfoItem('ID', '2023001'),
+              _buildInfoItem('Batch', '2023-2027'),
+              _buildInfoItem('Semester', 'III'),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildCardDetail(String title, String value) {
+  Widget _buildInfoItem(String title, String value) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
-            fontSize: 10,
+            color: Colors.grey.shade600,
+            fontSize: 12,
           ),
         ),
+        const SizedBox(height: 4),
         Text(
           value,
           style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
             fontWeight: FontWeight.w600,
+            fontSize: 14,
           ),
         ),
       ],
@@ -194,11 +183,11 @@ class _ExpandableStudentCardState extends State<ExpandableStudentCard> {
   }
 }
 
-class HorizontalCoursesList extends StatelessWidget {
+class CourseHorizontalList extends StatelessWidget {
   final List<Course> courses;
   final bool showProgress;
 
-  const HorizontalCoursesList({
+  const CourseHorizontalList({
     super.key,
     required this.courses,
     required this.showProgress,
@@ -207,19 +196,19 @@ class HorizontalCoursesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 180,
+      height: 200,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         itemCount: courses.length,
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width * 0.7,
-              child: CourseCard(
-                course: courses[index],
-                showProgress: showProgress,
-              ),
+            padding: EdgeInsets.only(
+              right: index == courses.length - 1 ? 0 : 16,
+            ),
+            child: CourseCard(
+              course: courses[index],
+              showProgress: showProgress,
             ),
           );
         },
@@ -240,75 +229,95 @@ class CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      width: 160,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 40,
-              width: 40,
-              decoration: BoxDecoration(
-                color: course.color.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(16)),
+            child: Container(
+              height: 100,
+              color: course.color.withOpacity(0.1),
               child: Center(
-                child: Icon(course.icon, color: course.color),
+                child: Icon(
+                  course.icon,
+                  size: 40,
+                  color: course.color,
+                ),
               ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              course.title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              course.code,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
-            ),
-            if (showProgress) ...[
-              const SizedBox(height: 12),
-              LinearProgressIndicator(
-                value: course.progress / 100,
-                backgroundColor: Colors.grey[200],
-                color: course.color,
-                minHeight: 6,
-                borderRadius: BorderRadius.circular(3),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${course.progress}% completed',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey,
-                    ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  course.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
                   ),
-                  Text(
-                    'Continue',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: course.color,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  course.code,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                  ),
+                ),
+                if (showProgress) ...[
+                  const SizedBox(height: 12),
+                  LinearProgressIndicator(
+                    value: course.progress / 100,
+                    backgroundColor: Colors.grey.shade200,
+                    color: course.color,
+                    minHeight: 6,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${course.progress}%',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        'Continue',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: course.color,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ],
-          ],
-        ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
