@@ -66,7 +66,7 @@ class StudentDashboard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.headline6?.copyWith(
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
           ),
@@ -128,14 +128,14 @@ class StudentProfileCard extends StatelessWidget {
                   children: [
                     Text(
                       'John Doe',
-                      style: Theme.of(context).textTheme.headline6?.copyWith(
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Computer Science',
-                      style: Theme.of(context).textTheme.subtitle2?.copyWith(
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             color: Colors.grey.shade600,
                           ),
                     ),
