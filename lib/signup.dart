@@ -17,8 +17,16 @@ class _SignupPageState extends State<SignupPage> {
     final isTablet = screenWidth > 600; // Adjust breakpoint for tablets
 
     return Scaffold(
-      
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Row(
+          children: [
+            IconButton(onPressed: (){
+              Navigator.pop(context, MaterialPageRoute(builder: (context) => const SignupPage(),),);
+            }, icon: Icon(Icons.keyboard_double_arrow_left_outlined) ),
+          ],
+        )
+      ),
       body: Padding(
         padding: EdgeInsets.all(isTablet ? 30.0 : 20.0), // Responsive padding
         child: SingleChildScrollView(
