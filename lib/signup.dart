@@ -19,13 +19,29 @@ class _SignupPageState extends State<SignupPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Row(
-          children: [
-            IconButton(onPressed: (){
-              Navigator.pop(context, MaterialPageRoute(builder: (context) => const SignupPage(),),);
-            }, icon: Icon(Icons.keyboard_double_arrow_left_outlined) ),
-          ],
-        )
+        title: Text(
+          'Padhai',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(
+              context,
+              MaterialPageRoute(builder: (context) => const SignupPage()),
+            );
+          },
+          icon: Icon(
+            Icons.keyboard_double_arrow_left_outlined,
+            color: Colors.white,
+          ),
+        ),
+
+        backgroundColor: const Color.fromARGB(232, 67, 130, 238),
+        centerTitle: true,
       ),
       body: Padding(
         padding: EdgeInsets.all(isTablet ? 30.0 : 20.0), // Responsive padding
@@ -54,7 +70,8 @@ class _SignupPageState extends State<SignupPage> {
               const SizedBox(height: 30),
               _EmailTextField(), // Separate widget for email field
               const SizedBox(height: 20),
-              _PasswordTextField( // Separate widget for password field
+              _PasswordTextField(
+                // Separate widget for password field
                 obscureText: _obscurePassword,
                 onPressed: () {
                   setState(() {
@@ -63,7 +80,8 @@ class _SignupPageState extends State<SignupPage> {
                 },
               ),
               const SizedBox(height: 20),
-              _ConfirmPasswordTextField( // Separate widget for confirm password field
+              _ConfirmPasswordTextField(
+                // Separate widget for confirm password field
                 obscureText: _obscureConfirmPassword,
                 onPressed: () {
                   setState(() {
@@ -81,7 +99,10 @@ class _SignupPageState extends State<SignupPage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    minimumSize: Size(double.infinity, isTablet ? 50 : 50), // Responsive button size
+                    minimumSize: Size(
+                      double.infinity,
+                      isTablet ? 50 : 50,
+                    ), // Responsive button size
                   ),
                   child: Text(
                     'Sign up',
@@ -95,12 +116,10 @@ class _SignupPageState extends State<SignupPage> {
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () {
-                   Navigator.pop(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SignupPage(),
-                      ),
-                    );
+                  Navigator.pop(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SignupPage()),
+                  );
                 },
                 child: Text(
                   'Already have an account',
@@ -130,10 +149,10 @@ class _SignupPageState extends State<SignupPage> {
                     ),
                     onPressed: () {},
                   ),
-                   IconButton(
+                  IconButton(
                     onPressed: () {},
                     icon: Image.asset(
-                    'assets/images/google.png',
+                      'assets/images/google.png',
                       width: isTablet ? 40 : 30, // Responsive icon size
                       height: isTablet ? 40 : 30,
                     ),
@@ -156,9 +175,7 @@ class _EmailTextField extends StatelessWidget {
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.mail),
         labelText: 'Enter your E-mail',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -181,9 +198,7 @@ class _PasswordTextField extends StatelessWidget {
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.lock),
         labelText: 'Please enter password',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         suffixIcon: IconButton(
           icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility),
           onPressed: onPressed,
@@ -210,9 +225,7 @@ class _ConfirmPasswordTextField extends StatelessWidget {
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.calendar_today),
         labelText: 'Please confirm password',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         suffixIcon: IconButton(
           icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility),
           onPressed: onPressed,
