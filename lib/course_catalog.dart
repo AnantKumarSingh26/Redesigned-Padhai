@@ -487,7 +487,7 @@ class CourseManagementScreen extends StatelessWidget {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('Create New Lesson'),
+            title: const Text('Add new Lesson'),
             content: Form(
               key: formKey,
               child: Column(
