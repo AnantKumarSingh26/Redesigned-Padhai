@@ -109,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>  DashboardSelectionScreen(),
+                        builder: (context) => DashboardSelectionScreen(),
                       ),
                     );
                   },
@@ -170,7 +170,9 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      bottompopup(context);
+                    },
                     icon: Icon(
                       Icons.facebook,
                       color: Colors.blue[800],
@@ -178,14 +180,15 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      bottompopup(context);
+                    },
                     icon: Image.asset(
-                    'assets/images/google.png',
+                      'assets/images/google.png',
                       width: isTablet ? 40 : 30, // Responsive icon size
                       height: isTablet ? 40 : 30,
                     ),
                   ),
-                
                 ],
               ),
             ],
@@ -193,7 +196,12 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
       persistentFooterButtons: [
-        Center(child: Text('Powered by @Padhai', style: TextStyle(color: Colors.grey[700]))),
+        Center(
+          child: Text(
+            'Powered by @Padhai',
+            style: TextStyle(color: Colors.grey[700]),
+          ),
+        ),
       ],
     );
   }
@@ -238,4 +246,17 @@ class _PasswordTextField extends StatelessWidget {
       ),
     );
   }
+}
+
+bottompopup(BuildContext context) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        "Your region doesn't support this feature. Sorry for the inconvenience.",
+        style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold),
+      ),
+      backgroundColor: Colors.redAccent,
+      duration: Duration(seconds: 3),
+    ),
+  );
 }
