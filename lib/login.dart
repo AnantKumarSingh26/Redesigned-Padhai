@@ -247,16 +247,3 @@ class _PasswordTextField extends StatelessWidget {
     );
   }
 }
-
-bottompopup(BuildContext context) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(
-        "Your region doesn't support this feature. Sorry for the inconvenience.",
-        style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold),
-      ),
-      backgroundColor: Colors.redAccent,
-      duration: Duration(seconds: 3),
-    ),
-  );
-}

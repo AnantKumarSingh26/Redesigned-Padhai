@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class SignupPage extends StatefulWidget {
@@ -147,10 +148,14 @@ class _SignupPageState extends State<SignupPage> {
                       color: Colors.blue,
                       size: isTablet ? 40 : 30, // Responsive icon size
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      bottompopup(context);
+                    },
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      bottompopup(context);
+                    },
                     icon: Image.asset(
                       'assets/images/google.png',
                       width: isTablet ? 40 : 30, // Responsive icon size
@@ -233,4 +238,22 @@ class _ConfirmPasswordTextField extends StatelessWidget {
       ),
     );
   }
+}
+
+bottompopup(BuildContext context) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        "Your region doesn't support this feature. Sorry for inconvenience.",
+        style: TextStyle(fontFamily: 'Poppins', 
+        fontWeight: FontWeight.bold,
+        color: Colors.redAccent,
+        fontSize: 18,
+      ),
+      textAlign: TextAlign.center,
+          ),
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
+      duration: Duration(seconds: 3),
+    ),
+  );
 }
