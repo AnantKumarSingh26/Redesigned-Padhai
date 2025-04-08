@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:padhai/decide.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
+import 'package:padhai/adminDashbord.dart';
+import 'package:padhai/student_dashboard.dart'; // Import Student Dashboard
+import 'package:padhai/student_dashbord.dart';
+import 'package:padhai/teacher_dashboard.dart'; // Import Teacher Dashboard
+import 'package:padhai/admin_dashboard.dart'; // Import Admin Dashboard
 import 'package:padhai/signup.dart';
-// import 'package:padhai/student_dashbord.dart';
+import 'package:padhai/teacher_dashbord.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,16 +17,87 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance; // Get Firebase Auth instance
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Initialize Firestore
   bool _obscureText = true;
+  String _errorMessage = '';
+
+  Future<void> _login() async {
+    setState(() {
+      _errorMessage = '';
+    });
+    try {
+      final String email = _emailController.text.trim();
+      final String password = _passwordController.text.trim();
+
+      if (email.isEmpty || password.isEmpty) {
+        setState(() {
+          _errorMessage = 'Please enter both email and password.';
+        });
+        return;
+      }
+
+      // Sign in with email and password
+      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // If login is successful, fetch user role and navigate
+      if (userCredential.user != null) {
+        final userDoc = await _firestore.collection('users_roles').doc(userCredential.user!.uid).get();
+
+        if (userDoc.exists && userDoc.data()!.containsKey('role')) {
+          final userRole = userDoc.data()!['role'];
+
+          print('User Role: $userRole');
+
+          if (userRole == 'admin') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const AdminDashboard()),
+            );
+          } else if (userRole == 'teacher') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const TeacherDashboard()),
+            );
+          } else { // Default to student
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const StudentDashboard()),
+            );
+          }
+        } 
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorMessage = 'Invalid email or password.';
+        if (e.code == 'user-not-found') {
+          _errorMessage = 'No user found for that email.';
+        } else if (e.code == 'wrong-password') {
+          _errorMessage = 'Wrong password provided for that user.';
+        } else {
+          _errorMessage = 'An error occurred during login: ${e.message}';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'An unexpected error occurred: $e';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isTablet = screenWidth > 600; // Adjust breakpoint for tablets
+    final isTablet = screenWidth > 600;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Padhai',
           style: TextStyle(
             fontFamily: 'Poppins',
@@ -33,25 +110,22 @@ class _LoginPageState extends State<LoginPage> {
         leading: IconButton(
           icon: const Icon(
             Icons.keyboard_double_arrow_left_outlined,
-            color: Colors.white, // White back arrow
+            color: Colors.white,
           ),
           onPressed: () {
-            Navigator.pop(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-            );
+            Navigator.pop(context); // Simple pop to go back
           },
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(isTablet ? 30.0 : 20.0), // Responsive padding
+        padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: isTablet ? 50 : 30), // Responsive spacing
-              Center(
-                child: const Text(
+              SizedBox(height: isTablet ? 50 : 30),
+              const Center(
+                child: Text(
                   'Login',
                   style: TextStyle(
                     fontSize: 38,
@@ -62,8 +136,8 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              Center(
-                child: const Text(
+              const Center(
+                child: Text(
                   "Welcome back champ, you've been missed!",
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -74,16 +148,31 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 30),
-              _UsernameTextField(), // Separate widget for username field
+              TextField(
+                controller: _emailController, // Use the email controller
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.person),
+                  labelText: 'Email', // Changed to Email
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
               const SizedBox(height: 20),
-              _PasswordTextField(
-                // Separate widget for password field
+              TextField(
+                controller: _passwordController, // Use the password controller
                 obscureText: _obscureText,
-                onPressed: () {
-                  setState(() {
-                    _obscureText = !_obscureText;
-                  });
-                },
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.lock),
+                  labelText: 'Password',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
+                    },
+                  ),
+                ),
               ),
               const SizedBox(height: 5),
               Row(
@@ -93,7 +182,6 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {},
                     child: const Text(
                       'Forgot your password?',
-
                       style: TextStyle(
                         color: Colors.redAccent,
                         fontWeight: FontWeight.bold,
@@ -105,14 +193,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 15),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DashboardSelectionScreen(),
-                      ),
-                    );
-                  },
+                  onPressed: _login, // Call the _login function
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(
@@ -133,15 +214,21 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 10),
+              if (_errorMessage.isNotEmpty) // Display error message if it exists
+                Center(
+                  child: Text(
+                    _errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
               const SizedBox(height: 20),
               Center(
                 child: TextButton(
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const SignupPage(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const SignupPage()),
                     );
                   },
                   child: const Text(
@@ -176,7 +263,7 @@ class _LoginPageState extends State<LoginPage> {
                     icon: Icon(
                       Icons.facebook,
                       color: Colors.blue[800],
-                      size: isTablet ? 40 : 30, // Responsive icon size
+                      size: isTablet ? 40 : 30,
                     ),
                   ),
                   IconButton(
@@ -185,7 +272,7 @@ class _LoginPageState extends State<LoginPage> {
                     },
                     icon: Image.asset(
                       'assets/images/google.png',
-                      width: isTablet ? 40 : 30, // Responsive icon size
+                      width: isTablet ? 40 : 30,
                       height: isTablet ? 40 : 30,
                     ),
                   ),
@@ -207,43 +294,21 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-// Separate widget for username text field
-class _UsernameTextField extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.person),
-        labelText: 'Username',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-  }
-}
-
-// Separate widget for password text field
-class _PasswordTextField extends StatelessWidget {
-  final bool obscureText;
-  final VoidCallback onPressed;
-
-  const _PasswordTextField({
-    required this.obscureText,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.lock),
-        labelText: 'Password',
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        suffixIcon: IconButton(
-          icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility),
-          onPressed: onPressed,
+bottompopup(BuildContext context) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text(
+        "Your region doesn't support this feature. Sorry for inconvenience.",
+        style: TextStyle(
+          fontFamily: 'Poppins',
+          fontWeight: FontWeight.bold,
+          color: Colors.redAccent,
+          fontSize: 18,
         ),
+        textAlign: TextAlign.center,
       ),
-    );
-  }
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
+      duration: Duration(seconds: 3),
+    ),
+  );
 }

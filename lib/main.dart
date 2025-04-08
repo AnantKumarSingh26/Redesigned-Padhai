@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
-// import 'package:padhai/student_dashbord.dart';
-import 'splash_screen.dart'; // Import the SplashScreen
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart'; // Import your firebase_options.dart
+import 'splash_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -18,8 +23,6 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
       ),
       home: const SplashScreen(),
-      // home: const StudentDashbord() 
     );
   }
 }
-

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "246203678852",
+    "project_id": "fir-demo-d5c9b",
+    "storage_bucket": "fir-demo-d5c9b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:246203678852:android:1d67dc75e6002cd2bf82d1",
+        "android_client_info": {
+          "package_name": "com.example.padhai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4fX3w2P13qdz8QtguzGO8BpsofXGamCk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

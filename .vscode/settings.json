@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "D:/Projects/New folder/Redesigned-Padhai/linux"
+    "cmake.sourceDirectory": "D:/Projects/New folder/Redesigned-Padhai/linux",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
