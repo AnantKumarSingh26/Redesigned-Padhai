@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:padhai/adminDashbord.dart';
-import 'package:padhai/student_dashboard.dart'; // Import Student Dashboard
 import 'package:padhai/student_dashbord.dart';
-import 'package:padhai/teacher_dashboard.dart'; // Import Teacher Dashboard
-import 'package:padhai/admin_dashboard.dart'; // Import Admin Dashboard
 import 'package:padhai/signup.dart';
 import 'package:padhai/teacher_dashbord.dart';
 
