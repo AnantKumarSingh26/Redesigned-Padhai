@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
-import 'package:padhai/adminDashbord.dart';
+import 'package:padhai/admin_dashbord.dart';
 import 'package:padhai/student_dashbord.dart';
 import 'package:padhai/signup.dart';
 import 'package:padhai/teacher_dashbord.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -49,6 +50,11 @@ class _LoginPageState extends State<LoginPage> {
         if (userDoc.exists && userDoc.data()!.containsKey('role')) {
           final userRole = userDoc.data()!['role'];
 
+          // Save login timestamp and role in SharedPreferences
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          prefs.setInt('loginTimestamp', DateTime.now().millisecondsSinceEpoch);
+          prefs.setString('userRole', userRole);
+
           print('User Role: $userRole');
 
           if (userRole == 'admin') {
@@ -61,13 +67,13 @@ class _LoginPageState extends State<LoginPage> {
               context,
               MaterialPageRoute(builder: (context) => const TeacherDashboard()),
             );
-          } else { // Default to student
+          } else {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const StudentDashboard()),
             );
           }
-        } 
+        }
       }
     } on FirebaseAuthException catch (e) {
       setState(() {

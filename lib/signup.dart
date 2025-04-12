@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -10,19 +10,23 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  final TextEditingController _nameController = TextEditingController(); // New controller for name
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance; // Get Firebase Auth instance
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Initialize Firestore
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   String _errorMessage = '';
+  String _selectedRole = 'student'; // Default role
+
+  // List of roles for dropdown
+  final List<String> _roles = ['student', 'teacher'];
 
   Future<void> _signup() async {
     try {
-      final String name = _nameController.text.trim(); // Get name
+      final String name = _nameController.text.trim();
       final String email = _emailController.text.trim();
       final String password = _passwordController.text.trim();
       final String confirmPassword = _confirmPasswordController.text.trim();
@@ -47,20 +51,22 @@ class _SignupPageState extends State<SignupPage> {
         password: password,
       );
 
-      // If signup in Firebase is successful, save additional info to Firestore with default role
+      // Save additional info to Firestore with selected role
       if (userCredential.user != null) {
         await _firestore.collection('users_roles').doc(userCredential.user!.uid).set({
-          'name': name, // Save the name
-          'email': email, // Save the email (optional, might be redundant with Auth)
-          'role': 'student', // Set the default role to 'student'
+          'name': name,
+          'email': email,
+          'role': _selectedRole, // Use the selected role
+          'createdAt': FieldValue.serverTimestamp(),
         });
 
         // Optionally, send email verification
         // await userCredential.user!.sendEmailVerification();
-        Navigator.pop(context); // Go back to the login page
+        
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account created successfully! You are now a student.'),
+          SnackBar(
+            content: Text('Account created successfully! You are registered as a $_selectedRole.'),
             backgroundColor: Colors.green,
           ),
         );
@@ -101,9 +107,7 @@ class _SignupPageState extends State<SignupPage> {
           ),
         ),
         leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context); // Simple pop to go back
-          },
+          onPressed: () => Navigator.pop(context),
           icon: const Icon(
             Icons.keyboard_double_arrow_left_outlined,
             color: Colors.white,
@@ -138,7 +142,7 @@ class _SignupPageState extends State<SignupPage> {
               ),
               const SizedBox(height: 30),
               TextField(
-                controller: _nameController, // Use the name controller
+                controller: _nameController,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.person),
                   labelText: 'Enter your Name',
@@ -147,7 +151,7 @@ class _SignupPageState extends State<SignupPage> {
               ),
               const SizedBox(height: 20),
               TextField(
-                controller: _emailController, // Use the email controller
+                controller: _emailController,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.mail),
                   labelText: 'Enter your E-mail',
@@ -155,8 +159,38 @@ class _SignupPageState extends State<SignupPage> {
                 ),
               ),
               const SizedBox(height: 20),
+              // Role Selection Dropdown
+              InputDecorator(
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.school),
+                  labelText: 'I am a...',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedRole,
+                    isDense: true,
+                    isExpanded: true,
+                    items: _roles.map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value == 'student' ? 'Student/Learner' : 'Teacher',
+                          style: TextStyle(fontSize: isTablet ? 16 : 14),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedRole = newValue!;
+                      });
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               TextField(
-                controller: _passwordController, // Use the password controller
+                controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.lock),
@@ -174,7 +208,7 @@ class _SignupPageState extends State<SignupPage> {
               ),
               const SizedBox(height: 20),
               TextField(
-                controller: _confirmPasswordController, // Use the confirm password controller
+                controller: _confirmPasswordController,
                 obscureText: _obscureConfirmPassword,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.calendar_today),
@@ -194,7 +228,7 @@ class _SignupPageState extends State<SignupPage> {
               SizedBox(
                 width: 140,
                 child: ElevatedButton(
-                  onPressed: _signup, // Call the _signup function
+                  onPressed: _signup,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(
@@ -225,9 +259,7 @@ class _SignupPageState extends State<SignupPage> {
                 ),
               const SizedBox(height: 20),
               TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // Go back to the login page
-                },
+                onPressed: () => Navigator.pop(context),
                 child: Text(
                   'Already have an account',
                   style: TextStyle(
@@ -254,14 +286,10 @@ class _SignupPageState extends State<SignupPage> {
                       color: Colors.blue,
                       size: isTablet ? 40 : 30,
                     ),
-                    onPressed: () {
-                      bottompopup(context);
-                    },
+                    onPressed: () => bottompopup(context),
                   ),
                   IconButton(
-                    onPressed: () {
-                      bottompopup(context);
-                    },
+                    onPressed: () => bottompopup(context),
                     icon: Image.asset(
                       'assets/images/google.png',
                       width: isTablet ? 40 : 30,
@@ -278,7 +306,7 @@ class _SignupPageState extends State<SignupPage> {
   }
 }
 
-bottompopup(BuildContext context) {
+void bottompopup(BuildContext context) {
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(
       content: Text(

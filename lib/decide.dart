@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:padhai/student_dashbord.dart';
 import 'package:padhai/teacher_dashbord.dart';
-import 'package:padhai/adminDashbord.dart';
+import 'package:padhai/admin_dashbord.dart';
 
 class DashboardSelectionScreen extends StatelessWidget {
   const DashboardSelectionScreen({super.key});

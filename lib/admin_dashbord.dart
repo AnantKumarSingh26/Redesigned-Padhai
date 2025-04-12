@@ -35,7 +35,7 @@ class AdminDashboard extends StatelessWidget {
                     isTablet ? 2 : 1, // Adjust grid columns for responsiveness
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: isTablet ? 2.5 : 3, // Adjust aspect ratio
+                childAspectRatio: isTablet ? 2.5 : 2.5, // Adjust aspect ratio
               ),
               itemCount: _adminOptions.length,
               itemBuilder: (context, index) {
