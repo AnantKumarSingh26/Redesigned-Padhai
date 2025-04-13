@@ -1,23 +1,171 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class StudentDashboard extends StatelessWidget {
+class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
 
   @override
+  State<StudentDashboard> createState() => _StudentDashboardState();
+}
+
+class _StudentDashboardState extends State<StudentDashboard> {
+  // Student data variables
+  String studentName = 'Loading...';
+  String department = 'Loading...';
+  String studentId = 'Loading...';
+  String batch = 'Loading...';
+  String semester = 'Loading...';
+  String email = 'Loading...';
+  
+  // Courses data
+  List<Course> enrolledCourses = [];
+  List<Course> recommendedCourses = [];
+  bool isLoading = true;
+  String errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      // Get current authenticated user
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() {
+          errorMessage = 'User not logged in';
+          isLoading = false;
+        });
+        return;
+      }
+
+      // Query users_roles collection for the current user's data
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users_roles')
+          .where('email', isEqualTo: user.email)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        setState(() {
+          errorMessage = 'User data not found';
+          isLoading = false;
+        });
+        return;
+      }
+
+      // Get the first document (should be only one for each email)
+      final userDoc = querySnapshot.docs.first;
+      final userData = userDoc.data();
+
+      setState(() {
+        studentName = userData['name'] ?? 'No Name';
+        department = userData['department'] ?? 'No Department';
+        studentId = userData['studentId'] ?? 'No ID';
+        batch = userData['batch'] ?? 'No Batch';
+        semester = userData['semester'] ?? 'No Semester';
+        email = userData['email'] ?? user.email ?? 'No Email';
+      });
+
+      // Now fetch the courses
+      await _fetchCourses(userDoc.id);
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error loading data: ${e.toString()}';
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _fetchCourses(String userId) async {
+    try {
+      // Fetch enrolled courses
+      final enrolledQuery = await FirebaseFirestore.instance
+          .collection('enrollments')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      final List<Course> tempEnrolled = [];
+      
+      for (final enrollmentDoc in enrolledQuery.docs) {
+        final enrollmentData = enrollmentDoc.data();
+        final courseRef = enrollmentData['courseId'] as DocumentReference?;
+        
+        if (courseRef != null) {
+          final courseDoc = await courseRef.get();
+          
+          if (courseDoc.exists) {
+            tempEnrolled.add(
+              Course(
+                courseDoc['title'] ?? 'No Title',
+                courseDoc['code'] ?? 'No Code',
+                _getIconForCourse(courseDoc['code']),
+                (enrollmentData['progress'] ?? 0).toInt(),
+                _getColorForCourse(courseDoc['code']),
+              ),
+            );
+          }
+        }
+      }
+
+      // Fetch recommended courses (based on department)
+      final recommendedQuery = await FirebaseFirestore.instance
+          .collection('courses')
+          .where('department', isEqualTo: department)
+          .where('code', whereNotIn: tempEnrolled.map((c) => c.code).toList())
+          .limit(3)
+          .get();
+
+      final List<Course> tempRecommended = recommendedQuery.docs.map((doc) {
+        return Course(
+          doc['title'] ?? 'No Title',
+          doc['code'] ?? 'No Code',
+          _getIconForCourse(doc['code']),
+          0, // Recommended courses have 0 progress
+          _getColorForCourse(doc['code']),
+        );
+      }).toList();
+
+      setState(() {
+        enrolledCourses = tempEnrolled;
+        recommendedCourses = tempRecommended;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error loading courses: ${e.toString()}';
+        isLoading = false;
+      });
+    }
+  }
+
+  IconData _getIconForCourse(String? code) {
+    if (code == null) return Icons.school;
+    if (code.contains('CS101')) return Icons.code;
+    if (code.contains('CS102')) return Icons.memory;
+    if (code.contains('CS103')) return Icons.model_training;
+    if (code.contains('CS104')) return Icons.web;
+    return Icons.school;
+  }
+
+  Color _getColorForCourse(String? code) {
+    final colors = [
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.red,
+      Colors.teal,
+      Colors.indigo,
+    ];
+    return colors[code?.hashCode ?? 0 % colors.length];
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final List<Course> myCourses = [
-      Course('Flutter Development', 'CS101', Icons.code, 85, Colors.blue),
-      Course('Data Structures', 'CS102', Icons.memory, 72, Colors.green),
-      Course('Machine Learning', 'CS103', Icons.model_training, 90, Colors.orange),
-      Course('Web Development', 'CS104', Icons.web, 68, Colors.purple),
-    ];
-
-    final List<Course> recommendedCourses = [
-      Course('AI Fundamentals', 'CS201', Icons.psychology, 0, Colors.red),
-      Course('Cloud Computing', 'CS202', Icons.cloud, 0, Colors.teal),
-      Course('Cyber Security', 'CS203', Icons.security, 0, Colors.indigo),
-    ];
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -39,17 +187,56 @@ class StudentDashboard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              const StudentProfileCard(),
+              
+              if (errorMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
+              
+              StudentProfileCard(
+                name: studentName,
+                department: department,
+                studentId: studentId,
+                batch: batch,
+                semester: semester,
+                email: email,
+              ),
               const SizedBox(height: 32),
               
-              _buildSectionHeader('My Courses', 'View All', context),
+              _buildSectionHeader('My Courses', 'View All', () {
+                // Navigation to all courses
+              }),
               const SizedBox(height: 16),
-              CourseHorizontalList(courses: myCourses, showProgress: true),
+              
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : enrolledCourses.isEmpty
+                      ? const Text('No courses enrolled yet')
+                      : CourseHorizontalList(
+                          courses: enrolledCourses,
+                          showProgress: true,
+                        ),
+              
               const SizedBox(height: 32),
               
-              _buildSectionHeader('Recommended Courses', 'See All', context),
+              _buildSectionHeader('Recommended Courses', 'See All', () {
+                // Navigation to recommended courses
+              }),
               const SizedBox(height: 16),
-              CourseHorizontalList(courses: recommendedCourses, showProgress: false),
+              
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : recommendedCourses.isEmpty
+                      ? const Text('No recommendations available')
+                      : CourseHorizontalList(
+                          courses: recommendedCourses,
+                          showProgress: false,
+                        ),
+              
               const SizedBox(height: 32),
             ],
           ),
@@ -58,7 +245,7 @@ class StudentDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title, String action, BuildContext context) {
+  Widget _buildSectionHeader(String title, String action, VoidCallback onPressed) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
@@ -71,7 +258,7 @@ class StudentDashboard extends StatelessWidget {
                 ),
           ),
           TextButton(
-            onPressed: () {},
+            onPressed: onPressed,
             child: Text(
               action,
               style: const TextStyle(
@@ -87,7 +274,22 @@ class StudentDashboard extends StatelessWidget {
 }
 
 class StudentProfileCard extends StatelessWidget {
-  const StudentProfileCard({super.key});
+  final String name;
+  final String department;
+  final String studentId;
+  final String batch;
+  final String semester;
+  final String email;
+
+  const StudentProfileCard({
+    super.key,
+    required this.name,
+    required this.department,
+    required this.studentId,
+    required this.batch,
+    required this.semester,
+    required this.email,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -127,15 +329,22 @@ class StudentProfileCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'John Doe',
+                      name,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Computer Science',
+                      department,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      email,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.grey.shade600,
                           ),
                     ),
@@ -150,9 +359,9 @@ class StudentProfileCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildInfoItem('ID', '2023001'),
-              _buildInfoItem('Batch', '2023-2027'),
-              _buildInfoItem('Semester', 'III'),
+              _buildInfoItem('ID', studentId),
+              _buildInfoItem('Batch', batch),
+              _buildInfoItem('Semester', semester),
             ],
           ),
         ],
