@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'welcome_page.dart';
-import 'manage_user_accounts.dart'; // Assuming this is your user management screen
+import 'admin_screens/manage_user_accounts.dart'; // Assuming this is your user management screen
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
