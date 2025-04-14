@@ -15,7 +15,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // Navigate to the WelcomePage after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const WelcomePage()),
+        MaterialPageRoute(builder: (context) => const WelcomePage()), // Navigate to WelcomePage
       );
     });
   }

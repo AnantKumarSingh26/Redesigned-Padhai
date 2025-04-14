@@ -8,12 +8,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:padhai/main.dart';
+import 'package:padhai/main.dart'; // Ensure this import is correct
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const MyApp()); // Ensure MyApp is defined in main.dart
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

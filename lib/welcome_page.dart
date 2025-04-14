@@ -67,17 +67,17 @@ class _WelcomePageState extends State<WelcomePage> {
                 // Animated Forward Button Box
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const LoginPage(),
+                        builder: (context) => const LoginPage(), // Navigate to LoginPage
                       ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
                     shape: const CircleBorder(),
                     padding: const EdgeInsets.all(20),
-                    backgroundColor: const Color.fromARGB(255, 2, 93, 251)
+                    backgroundColor: const Color.fromARGB(255, 2, 93, 251),
                   ),
                   child: const Icon(Icons.arrow_forward, size: 32, color: Colors.white),
                 ),
