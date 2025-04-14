@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:padhai/button.dart';
 import 'package:padhai/login.dart';
 
 class WelcomePage extends StatefulWidget {
@@ -66,8 +65,8 @@ class _WelcomePageState extends State<WelcomePage> {
                 ),
                 const SizedBox(height: 40),
                 // Animated Forward Button Box
-                CircularAnimatedButton(
-                  onTap: () {
+                ElevatedButton(
+                  onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -75,7 +74,12 @@ class _WelcomePageState extends State<WelcomePage> {
                       ),
                     );
                   },
-                  isPressed: isButtonPressed,
+                  style: ElevatedButton.styleFrom(
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(20),
+                    backgroundColor: const Color.fromARGB(255, 2, 93, 251)
+                  ),
+                  child: const Icon(Icons.arrow_forward, size: 32, color: Colors.white),
                 ),
               ],
             ),
