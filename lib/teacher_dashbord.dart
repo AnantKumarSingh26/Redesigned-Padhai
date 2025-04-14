@@ -1,10 +1,113 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:padhai/login.dart'; // Import your login page
+import 'package:padhai/login.dart';
 
-class TeacherDashboard extends StatelessWidget {
+class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({super.key});
+
+  @override
+  State<TeacherDashboard> createState() => _TeacherDashboardState();
+}
+
+class _TeacherDashboardState extends State<TeacherDashboard> {
+  // Teacher data variables
+  String teacherName = 'Loading...';
+  String department = 'Loading...';
+  String email = 'Loading...';
+  String profileImageUrl = '';
+  int classesToday = 0;
+  bool isLoading = true;
+  String errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTeacherData();
+    _fetchTodaysClasses();
+  }
+
+  Future<void> _fetchTeacherData() async {
+    try {
+      // Get current authenticated user
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() {
+          errorMessage = 'User not logged in';
+          isLoading = false;
+        });
+        return;
+      }
+
+      // Query users_roles collection for the current teacher's data
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users_roles')
+          .where('email', isEqualTo: user.email)
+          .where('role', isEqualTo: 'teacher')
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        setState(() {
+          errorMessage = 'Teacher data not found';
+          isLoading = false;
+        });
+        return;
+      }
+
+      // Get the teacher document
+      final teacherDoc = querySnapshot.docs.first;
+      final teacherData = teacherDoc.data();
+
+      // Format the name properly (capitalize first letters)
+      String formattedName = teacherData['name'] ?? 'Teacher';
+      if (formattedName.isNotEmpty) {
+        formattedName = formattedName.split(' ')
+            .map((word) => word.isNotEmpty 
+                ? word[0].toUpperCase() + word.substring(1).toLowerCase()
+                : '')
+            .join(' ')
+            .trim();
+      }
+
+      setState(() {
+        teacherName = formattedName;
+        department = teacherData['department'] ?? 'Department';
+        email = teacherData['email'] ?? user.email ?? '';
+        profileImageUrl = teacherData['profileImage'] ?? '';
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error loading teacher data: ${e.toString()}';
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _fetchTodaysClasses() async {
+    try {
+      // Get today's date in YYYY-MM-DD format
+      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      
+      // Query schedule collection for today's classes
+      final classesQuery = await FirebaseFirestore.instance
+          .collection('schedule')
+          .where('date', isEqualTo: today)
+          .where('teacherEmail', isEqualTo: FirebaseAuth.instance.currentUser?.email)
+          .get();
+
+      setState(() {
+        classesToday = classesQuery.size;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        classesToday = 0;
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +119,10 @@ class TeacherDashboard extends StatelessWidget {
         title: const Text('Teacher Dashboard'),
         centerTitle: true,
         actions: [
-          IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.notifications), 
+            onPressed: () {},
+          ),
         ],
       ),
       drawer: _buildDrawer(context),
@@ -25,66 +131,77 @@ class TeacherDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (errorMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  errorMessage,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+            
             _buildWelcomeHeader(context),
             const SizedBox(height: 20),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: isTablet ? 2 : 1,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: isTablet ? 2.5 : 2.5,
-              children: [
-                _DashboardCard(
-                  icon: Icons.library_books,
-                  title: 'Course Content',
-                  description: 'Manage and update course materials.',
-                  color: Colors.blue,
-                  gradientColors: [Colors.blue.shade300, Colors.blue.shade700],
-                  onTap: () => _showSnackbar(context, 'Course Content tapped'),
-                ),
-                _DashboardCard(
-                  icon: Icons.assignment,
-                  title: 'Mock Tests',
-                  description: 'Create and evaluate mock tests.',
-                  color: Colors.green,
-                  gradientColors: [Colors.green.shade300, Colors.green.shade700],
-                  onTap: () => _showSnackbar(context, 'Mock Tests tapped'),
-                ),
-                _DashboardCard(
-                  icon: Icons.assessment,
-                  title: 'Student Reports',
-                  description: 'View and analyze student performance.',
-                  color: Colors.orange,
-                  gradientColors: [Colors.orange.shade300, Colors.orange.shade700],
-                  onTap: () => _showSnackbar(context, 'Student Reports tapped'),
-                ),
-                _DashboardCard(
-                  icon: Icons.announcement,
-                  title: 'Announcements',
-                  description: 'Post and manage announcements.',
-                  color: Colors.purple,
-                  gradientColors: [Colors.purple.shade300, Colors.purple.shade700],
-                  onTap: () => _showSnackbar(context, 'Announcements tapped'),
-                ),
-                _DashboardCard(
-                  icon: Icons.question_answer,
-                  title: 'Student Queries',
-                  description: 'Respond to student questions.',
-                  color: Colors.teal,
-                  gradientColors: [Colors.teal.shade300, Colors.teal.shade700],
-                  onTap: () => _showSnackbar(context, 'Student Queries tapped'),
-                ),
-                _DashboardCard(
-                  icon: Icons.settings,
-                  title: 'Settings',
-                  description: 'Adjust application preferences.',
-                  color: Colors.grey,
-                  gradientColors: [Colors.grey.shade400, Colors.grey.shade600],
-                  onTap: () => _showSnackbar(context, 'Settings tapped'),
-                ),
-              ],
-            ),
+            isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: isTablet ? 2 : 1,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: isTablet ? 2.5 : 2.5,
+                    children: [
+                      _DashboardCard(
+                        icon: Icons.library_books,
+                        title: 'Course Content',
+                        description: 'Manage and update course materials.',
+                        color: Colors.blue,
+                        gradientColors: [Colors.blue.shade300, Colors.blue.shade700],
+                        onTap: () => _showSnackbar(context, 'Course Content tapped'),
+                      ),
+                      _DashboardCard(
+                        icon: Icons.assignment,
+                        title: 'Mock Tests',
+                        description: 'Create and evaluate mock tests.',
+                        color: Colors.green,
+                        gradientColors: [Colors.green.shade300, Colors.green.shade700],
+                        onTap: () => _showSnackbar(context, 'Mock Tests tapped'),
+                      ),
+                      _DashboardCard(
+                        icon: Icons.assessment,
+                        title: 'Student Reports',
+                        description: 'View and analyze student performance.',
+                        color: Colors.orange,
+                        gradientColors: [Colors.orange.shade300, Colors.orange.shade700],
+                        onTap: () => _showSnackbar(context, 'Student Reports tapped'),
+                      ),
+                      _DashboardCard(
+                        icon: Icons.announcement,
+                        title: 'Announcements',
+                        description: 'Post and manage announcements.',
+                        color: Colors.purple,
+                        gradientColors: [Colors.purple.shade300, Colors.purple.shade700],
+                        onTap: () => _showSnackbar(context, 'Announcements tapped'),
+                      ),
+                      _DashboardCard(
+                        icon: Icons.question_answer,
+                        title: 'Student Queries',
+                        description: 'Respond to student questions.',
+                        color: Colors.teal,
+                        gradientColors: [Colors.teal.shade300, Colors.teal.shade700],
+                        onTap: () => _showSnackbar(context, 'Student Queries tapped'),
+                      ),
+                      _DashboardCard(
+                        icon: Icons.settings,
+                        title: 'Settings',
+                        description: 'Adjust application preferences.',
+                        color: Colors.grey,
+                        gradientColors: [Colors.grey.shade400, Colors.grey.shade600],
+                        onTap: () => _showSnackbar(context, 'Settings tapped'),
+                      ),
+                    ],
+                  ),
           ],
         ),
       ),
@@ -105,68 +222,35 @@ class TeacherDashboard extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance
-                .collection('users_roles') // Replace with your Firestore collection name
-                .doc('teacherId') // Replace with the teacher's document ID
-                .get(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const DrawerHeader(
-                  decoration: BoxDecoration(color: Colors.blue),
-                  child: Center(
-                    child: CircularProgressIndicator(color: Colors.white),
-                  ),
-                );
-              }
-
-              if (snapshot.hasError || !snapshot.hasData || !snapshot.data!.exists) {
-                return const DrawerHeader(
-                  decoration: BoxDecoration(color: Colors.blue),
-                  child: Center(
-                    child: Text(
-                      'Error loading data',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                );
-              }
-
-              final data = snapshot.data!.data() as Map<String, dynamic>;
-              final name = data['name'] ?? 'Unknown Teacher';
-              final profileImage = data['profileImage'] ?? '';
-
-              return DrawerHeader(
-                decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CircleAvatar(
-                      radius: 45, // Increased size
-                      backgroundImage: profileImage.isNotEmpty
-                          ? NetworkImage(profileImage)
-                          : null,
-                      child: profileImage.isEmpty
-                          ? const Icon(Icons.person, size: 45, color: Colors.white)
-                          : null,
-                    ),
-                    const SizedBox(height: 20), // Increased spacing
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20, // Increased font size
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Text(
-                      'Computer Science Dept.',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ],
+          DrawerHeader(
+            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 45,
+                  backgroundImage: profileImageUrl.isNotEmpty
+                      ? NetworkImage(profileImageUrl)
+                      : null,
+                  child: profileImageUrl.isEmpty
+                      ? const Icon(Icons.person, size: 45, color: Colors.white)
+                      : null,
                 ),
-              );
-            },
+                const SizedBox(height: 20),
+                Text(
+                  teacherName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '$department Dept.',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.dashboard),
@@ -182,13 +266,14 @@ class TeacherDashboard extends StatelessWidget {
             leading: const Icon(Icons.exit_to_app),
             title: const Text('Logout'),
             onTap: () {
+              FirebaseAuth.instance.signOut();
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => const LoginPage()), // Replace with your LoginPage widget
-                (route) => false, // This removes all previous routes
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+                (route) => false,
               );
-    },
-        ),
+            },
+          ),
         ],
       ),
     );
@@ -203,11 +288,14 @@ class TeacherDashboard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 30,
-            backgroundImage: NetworkImage(
-              'https://randomuser.me/api/portraits/women/65.jpg',
-            ),
+            backgroundImage: profileImageUrl.isNotEmpty
+                ? NetworkImage(profileImageUrl)
+                : null,
+            child: profileImageUrl.isEmpty
+                ? const Icon(Icons.person, size: 30, color: Colors.blue)
+                : null,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -215,7 +303,7 @@ class TeacherDashboard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome, Dr. Sarah!',
+                  'Welcome, $teacherName!',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -227,7 +315,7 @@ class TeacherDashboard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '3 classes scheduled today',
+                  '$classesToday ${classesToday == 1 ? 'class' : 'classes'} scheduled today',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.blue.shade700,
                       ),
