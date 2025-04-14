@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:padhai/admin_dashbord.dart';
 import 'package:padhai/student_dashbord.dart';
 import 'package:padhai/signup.dart';
 import 'package:padhai/teacher_dashbord.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,14 +17,22 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance; // Get Firebase Auth instance
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // Initialize Firestore
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _obscureText = true;
   String _errorMessage = '';
+  bool _isLoading = false;
+
+  Future<void> _resetTimestamp() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setInt('loginTimestamp', DateTime.now().millisecondsSinceEpoch);
+    print('Timestamp reset to: ${DateTime.now()}');
+  }
 
   Future<void> _login() async {
     setState(() {
       _errorMessage = '';
+      _isLoading = true;
     });
     try {
       final String email = _emailController.text.trim();
@@ -33,51 +41,46 @@ class _LoginPageState extends State<LoginPage> {
       if (email.isEmpty || password.isEmpty) {
         setState(() {
           _errorMessage = 'Please enter both email and password.';
+          _isLoading = false;
         });
         return;
       }
 
-      // Sign in with email and password
       final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // If login is successful, fetch user role and navigate
       if (userCredential.user != null) {
         final userDoc = await _firestore.collection('users_roles').doc(userCredential.user!.uid).get();
 
         if (userDoc.exists && userDoc.data()!.containsKey('role')) {
           final userRole = userDoc.data()!['role'];
 
-          // Save login timestamp and role in SharedPreferences
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           prefs.setInt('loginTimestamp', DateTime.now().millisecondsSinceEpoch);
           prefs.setString('userRole', userRole);
-
-          print('User Role: $userRole');
 
           if (userRole == 'admin') {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const AdminDashboard()),
-            );
+            ).then((_) => _resetTimestamp());
           } else if (userRole == 'teacher') {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const TeacherDashboard()),
-            );
+            ).then((_) => _resetTimestamp());
           } else {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const StudentDashboard()),
-            );
+            ).then((_) => _resetTimestamp());
           }
         }
       }
     } on FirebaseAuthException catch (e) {
       setState(() {
-        _errorMessage = 'Invalid email or password.';
         if (e.code == 'user-not-found') {
           _errorMessage = 'No user found for that email.';
         } else if (e.code == 'wrong-password') {
@@ -85,10 +88,54 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           _errorMessage = 'An error occurred during login: ${e.message}';
         }
+        _isLoading = false;
       });
     } catch (e) {
       setState(() {
         _errorMessage = 'An unexpected error occurred: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _sendPasswordResetEmail() async {
+    final String email = _emailController.text.trim();
+    
+    if (email.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter your email address';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Password reset email sent to $email'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        if (e.code == 'user-not-found') {
+          _errorMessage = 'No user found with this email address';
+        } else {
+          _errorMessage = 'Error sending reset email: ${e.message}';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'An error occurred: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
   }
@@ -115,9 +162,7 @@ class _LoginPageState extends State<LoginPage> {
             Icons.keyboard_double_arrow_left_outlined,
             color: Colors.white,
           ),
-          onPressed: () {
-            Navigator.pop(context); // Simple pop to go back
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Padding(
@@ -152,16 +197,16 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 30),
               TextField(
-                controller: _emailController, // Use the email controller
+                controller: _emailController,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.person),
-                  labelText: 'Email', // Changed to Email
+                  labelText: 'Email',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
               const SizedBox(height: 20),
               TextField(
-                controller: _passwordController, // Use the password controller
+                controller: _passwordController,
                 obscureText: _obscureText,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.lock),
@@ -182,7 +227,7 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () {},
+                    onPressed: _isLoading ? null : _sendPasswordResetEmail,
                     child: const Text(
                       'Forgot your password?',
                       style: TextStyle(
@@ -196,7 +241,10 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 15),
               Center(
                 child: ElevatedButton(
-                  onPressed: _login, // Call the _login function
+                  onPressed: _isLoading ? null : () {
+                    _resetTimestamp();
+                    _login();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(
@@ -207,18 +255,27 @@ class _LoginPageState extends State<LoginPage> {
                       vertical: 10,
                     ),
                   ),
-                  child: const Text(
-                    'Sign In',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Sign In',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 10),
-              if (_errorMessage.isNotEmpty) // Display error message if it exists
+              if (_errorMessage.isNotEmpty)
                 Center(
                   child: Text(
                     _errorMessage,
@@ -228,7 +285,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               Center(
                 child: TextButton(
-                  onPressed: () {
+                  onPressed: _isLoading ? null : () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const SignupPage()),
@@ -260,7 +317,7 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    onPressed: () {
+                    onPressed: _isLoading ? null : () {
                       bottompopup(context);
                     },
                     icon: Icon(
@@ -270,7 +327,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {
+                    onPressed: _isLoading ? null : () {
                       bottompopup(context);
                     },
                     icon: Image.asset(

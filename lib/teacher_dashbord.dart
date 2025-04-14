@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:padhai/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({super.key});
@@ -24,8 +25,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   @override
   void initState() {
     super.initState();
+    _resetTimestamp(); // Reset timestamp on dashboard load
     _fetchTeacherData();
     _fetchTodaysClasses();
+  }
+
+  Future<void> _resetTimestamp() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setInt('loginTimestamp', DateTime.now().millisecondsSinceEpoch);
+    print('Timestamp reset to: ${DateTime.now()}');
   }
 
   Future<void> _fetchTeacherData() async {
@@ -255,7 +263,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ListTile(
             leading: const Icon(Icons.dashboard),
             title: const Text('Dashboard'),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TeacherDashboard()),
+              ).then((_) => _resetTimestamp());
+            },
           ),
           ListTile(
             leading: const Icon(Icons.calendar_today),

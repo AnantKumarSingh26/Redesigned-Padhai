@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'manage_user_accounts.dart'; // Added import for UserManagementScreen
+import 'package:shared_preferences/shared_preferences.dart';
+import 'welcome_page.dart';
+import 'manage_user_accounts.dart'; // Assuming this is your user management screen
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -11,17 +13,23 @@ class AdminDashboard extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, 
         title: const Text(
           'Admin Dashboard',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.blue,
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            tooltip: 'Logout',
+            onPressed: () => _confirmLogout(context),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(
-          isTablet ? 24 : 16,
-        ), // Adjust padding for responsiveness
+        padding: EdgeInsets.all(isTablet ? 24 : 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -31,11 +39,10 @@ class AdminDashboard extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount:
-                    isTablet ? 2 : 1, // Adjust grid columns for responsiveness
+                crossAxisCount: isTablet ? 2 : 1,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: isTablet ? 2.5 : 2.5, // Adjust aspect ratio
+                childAspectRatio: isTablet ? 2.5 : 2.5,
               ),
               itemCount: _adminOptions.length,
               itemBuilder: (context, index) {
@@ -48,7 +55,39 @@ class AdminDashboard extends StatelessWidget {
     );
   }
 
-  //Admin Tool method declaration
+  Future<void> _confirmLogout(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout ?? false) {
+      // Clear session data (optional)
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      // Navigate to the WelcomePage and remove all other routes
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const WelcomePage()),
+        (route) => false, // Remove all routes from the stack
+      );
+    }
+  }
+
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
@@ -155,8 +194,7 @@ final List<AdminOption> _adminOptions = [
   ),
   AdminOption(
     title: 'Generate Reports',
-    description:
-        'Generate detailed reports on users, courses, and system usage.',
+    description: 'Generate detailed reports on users, courses, and system usage.',
     icon: Icons.bar_chart,
     color: Colors.purple,
   ),
