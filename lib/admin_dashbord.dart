@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'welcome_page.dart';
-import 'admin_screens/manage_user_accounts.dart'; // Assuming this is your user management screen
+import 'admin_screens/manage_user_accounts.dart'; 
+import 'admin_screens/manage_course_content.dart';
+
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -121,7 +123,16 @@ class _AdminOptionCard extends StatelessWidget {
                 builder: (context) => const UserManagementScreen(),
               ),
             );
-          } else {
+          }
+          else if (option.title == 'Manage Course Catalog') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CourseManagementScreen(),
+              ),
+            );
+          }
+           else {
             print('Selected: ${option.title}');
           }
         },
