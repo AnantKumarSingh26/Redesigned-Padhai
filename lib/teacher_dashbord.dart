@@ -6,7 +6,6 @@ import 'package:padhai/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:padhai/teacher_screens/courses.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:padhai/teacher_screens/update.dart';
 
 class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({super.key});
@@ -131,7 +130,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white), 
+            icon: const Icon(Icons.refresh),
             onPressed: () {
               setState(() {
                 isLoading = true;
@@ -143,111 +142,111 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         ],
       ),
       drawer: _buildDrawer(context),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(isTablet ? 24 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (errorMessage.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(
-                  errorMessage,
-                  style: const TextStyle(color: Colors.red),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {
+            isLoading = true;
+          });
+          await _fetchTeacherData();
+          await _fetchTodaysClasses();
+        },
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(isTablet ? 24 : 16),
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (errorMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                  ),
                 ),
-              ),
-            
-            _buildWelcomeHeader(context),
-            const SizedBox(height: 20),
-            isLoading
-                ? Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
-                    child: GridView.count(
+              _buildWelcomeHeader(context),
+              const SizedBox(height: 20),
+              isLoading
+                  ? Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: isTablet ? 2 : 1,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: isTablet ? 2.5 : 2.5,
+                        children: List.generate(6, (index) => Container(
+                          color: Colors.white,
+                          margin: const EdgeInsets.all(8),
+                        )),
+                      ),
+                    )
+                  : GridView.count(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       crossAxisCount: isTablet ? 2 : 1,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
                       childAspectRatio: isTablet ? 2.5 : 2.5,
-                      children: List.generate(6, (index) => Container(
-                        color: Colors.white,
-                        margin: const EdgeInsets.all(8),
-                      )),
-                    ),
-                  )
-                : GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: isTablet ? 2 : 1,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: isTablet ? 2.5 : 2.5,
-                    children: [
-                      _DashboardCard(
-                        icon: Icons.library_books,
-                        title: 'Courses',
-                        description: 'Manage and update course materials.',
-                        color: Colors.blue,
-                        gradientColors: [Colors.blue.shade300, Colors.blue.shade700],
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const CoursesPage()),
+                      children: [
+                        _DashboardCard(
+                          icon: Icons.library_books,
+                          title: 'Courses',
+                          description: 'Manage and update course materials.',
+                          color: Colors.blue,
+                          gradientColors: [Colors.blue.shade300, Colors.blue.shade700],
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const CoursesPage()),
+                          ),
                         ),
-                      ),
-                      _DashboardCard(
-                        icon: Icons.assignment,
-                        title: 'Mock Tests',
-                        description: 'Create and evaluate mock tests.',
-                        color: Colors.green,
-                        gradientColors: [Colors.green.shade300, Colors.green.shade700],
-                        onTap: () => _showSnackbar(context, 'Mock Tests tapped'),
-                      ),
-                      _DashboardCard(
-                        icon: Icons.assessment,
-                        title: 'Student Reports',
-                        description: 'View and analyze student performance.',
-                        color: Colors.orange,
-                        gradientColors: [Colors.orange.shade300, Colors.orange.shade700],
-                        onTap: () => _showSnackbar(context, 'Student Reports tapped'),
-                      ),
-                      _DashboardCard(
-                        icon: Icons.announcement,
-                        title: 'Announcements',
-                        description: 'Post and manage announcements.',
-                        color: Colors.purple,
-                        gradientColors: [Colors.purple.shade300, Colors.purple.shade700],
-                        onTap: () => _showSnackbar(context, 'Announcements tapped'),
-                      ),
-                      _DashboardCard(
-                        icon: Icons.question_answer,
-                        title: 'Student Queries',
-                        description: 'Respond to student questions.',
-                        color: Colors.teal,
-                        gradientColors: [Colors.teal.shade300, Colors.teal.shade700],
-                        onTap: () => _showSnackbar(context, 'Student Queries tapped'),
-                      ),
-                      _DashboardCard(
-                        icon: Icons.settings,
-                        title: 'Settings',
-                        description: 'Adjust application preferences.',
-                        color: Colors.grey,
-                        gradientColors: [Colors.grey.shade400, Colors.grey.shade600],
-                        onTap: () => _showSnackbar(context, 'Settings tapped'),
-                      ),
-                    ],
-                  ),
-          ],
+                        _DashboardCard(
+                          icon: Icons.assignment,
+                          title: 'Mock Tests',
+                          description: 'Create and evaluate mock tests.',
+                          color: Colors.green,
+                          gradientColors: [Colors.green.shade300, Colors.green.shade700],
+                          onTap: () => _showSnackbar(context, 'Mock Tests tapped'),
+                        ),
+                        _DashboardCard(
+                          icon: Icons.assessment,
+                          title: 'Student Reports',
+                          description: 'View and analyze student performance.',
+                          color: Colors.orange,
+                          gradientColors: [Colors.orange.shade300, Colors.orange.shade700],
+                          onTap: () => _showSnackbar(context, 'Student Reports tapped'),
+                        ),
+                        _DashboardCard(
+                          icon: Icons.announcement,
+                          title: 'Announcements',
+                          description: 'Post and manage announcements.',
+                          color: Colors.purple,
+                          gradientColors: [Colors.purple.shade300, Colors.purple.shade700],
+                          onTap: () => _showSnackbar(context, 'Announcements tapped'),
+                        ),
+                        _DashboardCard(
+                          icon: Icons.question_answer,
+                          title: 'Student Queries',
+                          description: 'Respond to student questions.',
+                          color: Colors.teal,
+                          gradientColors: [Colors.teal.shade300, Colors.teal.shade700],
+                          onTap: () => _showSnackbar(context, 'Student Queries tapped'),
+                        ),
+                        _DashboardCard(
+                          icon: Icons.settings,
+                          title: 'Settings',
+                          description: 'Adjust application preferences.',
+                          color: Colors.grey,
+                          gradientColors: [Colors.grey.shade400, Colors.grey.shade600],
+                          onTap: () => _showSnackbar(context, 'Settings tapped'),
+                        ),
+                      ],
+                    ),
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const UpdateTeacherInfoPage()),
-          );
-        },
-        child: const Icon(Icons.edit),
       ),
     );
   }
@@ -372,15 +371,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 ),
               ],
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.blue),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const UpdateTeacherInfoPage()),
-              );
-            },
           ),
         ],
       ),

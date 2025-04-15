@@ -12,7 +12,6 @@ class AdminDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth > 600;
-    final isLoading = false; // Replace with actual loading state
 
     return Scaffold(
       appBar: AppBar(
@@ -31,28 +30,35 @@ class AdminDashboard extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(isTablet ? 24 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionHeader('Admin Tools', Icons.admin_panel_settings),
-            const SizedBox(height: 20),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: isTablet ? 2 : 1,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: isTablet ? 2.5 : 2.5,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Add logic to refresh the admin dashboard data here
+          print('Admin Dashboard refreshed');
+        },
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(isTablet ? 24 : 16),
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionHeader('Admin Tools', Icons.admin_panel_settings),
+              const SizedBox(height: 20),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isTablet ? 2 : 1,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: isTablet ? 2.5 : 2.5,
+                ),
+                itemCount: _adminOptions.length,
+                itemBuilder: (context, index) {
+                  return _AdminOptionCard(option: _adminOptions[index]);
+                },
               ),
-              itemCount: _adminOptions.length,
-              itemBuilder: (context, index) {
-                return _AdminOptionCard(option: _adminOptions[index]);
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

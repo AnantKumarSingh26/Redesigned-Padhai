@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 // Define a common gradient color variable
 const List<Color> gradientColors = [
@@ -82,6 +83,8 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
               courseCode: data['code'] ?? 'N/A',
               category: data['category'] ?? 'General',
               instructorId: data['instructorId'],
+              startTime: (data['startTime'] as Timestamp?)?.toDate(),
+              endTime: (data['endTime'] as Timestamp?)?.toDate(),
               onEdit: () => _showEditCourseDialog(context, course.id, data),
               onDelete: () => _deleteCourse(course.id),
               onViewMaterials: () => _viewCourseMaterials(context, course.id),
@@ -157,6 +160,8 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
     String code = '';
     String category = 'General';
     String? instructorId;
+    TimeOfDay? startTime;
+    TimeOfDay? endTime;
     List<Map<String, dynamic>> teachers = [];
 
     // Fetch teachers from Firestore
@@ -223,6 +228,39 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
                       validator: (value) =>
                           value == null ? 'Please select an instructor' : null,
                     ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final selectedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (selectedTime != null) {
+                          setState(() {
+                            startTime = selectedTime;
+                          });
+                        }
+                      },
+                      child: Text(startTime != null
+                          ? 'Start Time: ${startTime!.format(context)}'
+                          : 'Set Start Time'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final selectedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (selectedTime != null) {
+                          setState(() {
+                            endTime = selectedTime;
+                          });
+                        }
+                      },
+                      child: Text(endTime != null
+                          ? 'End Time: ${endTime!.format(context)}'
+                          : 'Set End Time'),
+                    ),
                   ],
                 ),
               ),
@@ -236,13 +274,13 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
                 onPressed: () async {
                   if (formKey.currentState?.validate() ?? false) {
                     formKey.currentState?.save();
-                    if (instructorId == null) {
+                    if (instructorId == null || startTime == null || endTime == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please select an instructor')),
+                        const SnackBar(content: Text('Please complete all fields')),
                       );
                       return;
                     }
-                    await _addCourse(context, name, code, category, instructorId!);
+                    await _addCourse(context, name, code, category, instructorId!, startTime!, endTime!);
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Course added successfully')),
@@ -376,16 +414,22 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
     );
   }
 
-  Future<void> _addCourse(BuildContext context, String name, String code, String category, String instructorId) async {
+  Future<void> _addCourse(BuildContext context, String name, String code, String category, String instructorId, TimeOfDay startTime, TimeOfDay endTime) async {
     try {
+      final now = DateTime.now();
+      final startDateTime = DateTime(now.year, now.month, now.day, startTime.hour, startTime.minute);
+      final endDateTime = DateTime(now.year, now.month, now.day, endTime.hour, endTime.minute);
+
       await _coursesCollection.add({
         'name': name,
         'code': code,
         'category': category,
         'instructorId': instructorId,
+        'startTime': startDateTime,
+        'endTime': endDateTime,
         'createdAt': FieldValue.serverTimestamp(),
-        'materials': [], // Array for storing material references
-        'mockTests': [], // Array for storing mock test references
+        'materials': [],
+        'mockTests': [],
       });
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -441,6 +485,8 @@ class _CourseCard extends StatelessWidget {
   final String courseCode;
   final String category;
   final String? instructorId;
+  final DateTime? startTime;
+  final DateTime? endTime;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onViewMaterials;
@@ -451,6 +497,8 @@ class _CourseCard extends StatelessWidget {
     required this.courseCode,
     required this.category,
     required this.instructorId,
+    required this.startTime,
+    required this.endTime,
     required this.onEdit,
     required this.onDelete,
     required this.onViewMaterials,
@@ -465,7 +513,7 @@ class _CourseCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12), // Match the Card's border radius
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Card(
         elevation: 4,
@@ -499,25 +547,17 @@ class _CourseCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
-              FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance
-                    .collection('users_roles')
-                    .doc(instructorId)
-                    .get(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData && snapshot.data!.exists) {
-                    final instructorName = snapshot.data!['name'] ?? 'Unknown';
-                    return Row(
-                      children: [
-                        const Icon(Icons.person, size: 16),
-                        const SizedBox(width: 4),
-                        Text('Instructor: $instructorName'),
-                      ],
-                    );
-                  }
-                  return const SizedBox();
-                },
-              ),
+              if (startTime != null && endTime != null)
+                Row(
+                  children: [
+                    const Icon(Icons.access_time, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Live: ${DateFormat.jm().format(startTime!)} - ${DateFormat.jm().format(endTime!)}',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
               const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
