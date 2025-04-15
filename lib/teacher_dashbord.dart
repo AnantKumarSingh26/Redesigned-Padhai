@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:padhai/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:padhai/teacher_screens/courses.dart';
+import 'package:shimmer/shimmer.dart';
 
 class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({super.key});
@@ -151,7 +153,22 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             _buildWelcomeHeader(context),
             const SizedBox(height: 20),
             isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: isTablet ? 2 : 1,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: isTablet ? 2.5 : 2.5,
+                      children: List.generate(6, (index) => Container(
+                        color: Colors.white,
+                        margin: const EdgeInsets.all(8),
+                      )),
+                    ),
+                  )
                 : GridView.count(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -166,7 +183,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                         description: 'Manage and update course materials.',
                         color: Colors.blue,
                         gradientColors: [Colors.blue.shade300, Colors.blue.shade700],
-                        onTap: () => _showSnackbar(context, 'Course Content tapped'),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const CoursesPage()),
+                        ),
                       ),
                       _DashboardCard(
                         icon: Icons.assignment,

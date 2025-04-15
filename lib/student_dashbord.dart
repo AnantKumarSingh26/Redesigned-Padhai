@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:padhai/student_screens/recommended_courses.dart';
+import 'package:padhai/login.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -115,7 +118,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
       final recommendedQuery = await FirebaseFirestore.instance
           .collection('courses')
           .where('department', isEqualTo: department)
-          .where('code', whereNotIn: tempEnrolled.map((c) => c.code).toList())
+          .where('code', whereNotIn: tempEnrolled.map((c) => c.code).toList().isEmpty ? null : tempEnrolled.map((c) => c.code).toList())
           .limit(3)
           .get();
 
@@ -171,7 +174,18 @@ class _StudentDashboardState extends State<StudentDashboard> {
       appBar: AppBar(
         title: const Text('Dashboard'),
         centerTitle: true,
-        elevation: 0,
+        backgroundColor: Colors.blueAccent,
+        leading: IconButton(
+          icon: const Icon(Icons.logout, color: Colors.white),
+          onPressed: () {
+            FirebaseAuth.instance.signOut();
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+              (route) => false,
+            );
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
@@ -213,7 +227,17 @@ class _StudentDashboardState extends State<StudentDashboard> {
               const SizedBox(height: 16),
               
               isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Column(
+                        children: List.generate(3, (index) => Container(
+                          height: 100,
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          color: Colors.white,
+                        )),
+                      ),
+                    )
                   : enrolledCourses.isEmpty
                       ? const Text('No courses enrolled yet')
                       : CourseHorizontalList(
@@ -229,12 +253,27 @@ class _StudentDashboardState extends State<StudentDashboard> {
               const SizedBox(height: 16),
               
               isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Column(
+                        children: List.generate(3, (index) => Container(
+                          height: 100,
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          color: Colors.white,
+                        )),
+                      ),
+                    )
                   : recommendedCourses.isEmpty
                       ? const Text('No recommendations available')
-                      : CourseHorizontalList(
+                      : RecommendedCoursesSection(
                           courses: recommendedCourses,
-                          showProgress: false,
+                          onViewAll: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const RecommendedCoursesPage()),
+                            );
+                          },
                         ),
               
               const SizedBox(height: 32),
@@ -540,4 +579,65 @@ class Course {
   final Color color;
 
   const Course(this.title, this.code, this.icon, this.progress, this.color);
+}
+
+class RecommendedCoursesSection extends StatelessWidget {
+  final List<Course> courses;
+  final VoidCallback onViewAll;
+
+  const RecommendedCoursesSection({
+    super.key,
+    required this.courses,
+    required this.onViewAll,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Recommended Courses',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            TextButton(
+              onPressed: onViewAll,
+              child: const Text(
+                'View All',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 215,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: courses.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: EdgeInsets.only(
+                  right: index == courses.length - 1 ? 0 : 16,
+                ),
+                child: CourseCard(
+                  course: courses[index],
+                  showProgress: false,
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
 }
