@@ -6,6 +6,7 @@ import 'package:padhai/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:padhai/teacher_screens/courses.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:padhai/teacher_screens/update.dart';
 
 class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({super.key});
@@ -130,8 +131,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications), 
-            onPressed: () {},
+            icon: const Icon(Icons.refresh, color: Colors.white), 
+            onPressed: () {
+              setState(() {
+                isLoading = true;
+              });
+              _fetchTeacherData();
+              _fetchTodaysClasses();
+            },
           ),
         ],
       ),
@@ -233,6 +240,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const UpdateTeacherInfoPage()),
+          );
+        },
+        child: const Icon(Icons.edit),
+      ),
     );
   }
 
@@ -249,6 +265,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
+        shrinkWrap: true, 
         children: [
           DrawerHeader(
             decoration: BoxDecoration(color: Theme.of(context).primaryColor),
@@ -355,6 +372,15 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 ),
               ],
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.blue),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const UpdateTeacherInfoPage()),
+              );
+            },
           ),
         ],
       ),

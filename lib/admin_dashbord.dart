@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shimmer/shimmer.dart';
 import 'welcome_page.dart';
 import 'admin_screens/manage_user_accounts.dart'; 
 import 'admin_screens/manage_course_content.dart';

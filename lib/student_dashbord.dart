@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:padhai/student_screens/recommended_courses.dart';
 import 'package:padhai/login.dart';
+import 'package:padhai/student_screens/update_info.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -280,6 +281,15 @@ class _StudentDashboardState extends State<StudentDashboard> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const UpdateInfoPage()),
+          );
+        },
+        child: const Icon(Icons.edit),
       ),
     );
   }
@@ -581,6 +591,7 @@ class Course {
   const Course(this.title, this.code, this.icon, this.progress, this.color);
 }
 
+// Modify the RecommendedCoursesSection to show two courses consecutively
 class RecommendedCoursesSection extends StatelessWidget {
   final List<Course> courses;
   final VoidCallback onViewAll;
@@ -619,20 +630,19 @@ class RecommendedCoursesSection extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 215,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
+          height: 430, // Adjust height for two rows
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2, // Two courses per row
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 3 / 2,
+            ),
             itemCount: courses.length,
             itemBuilder: (context, index) {
-              return Padding(
-                padding: EdgeInsets.only(
-                  right: index == courses.length - 1 ? 0 : 16,
-                ),
-                child: CourseCard(
-                  course: courses[index],
-                  showProgress: false,
-                ),
+              return CourseCard(
+                course: courses[index],
+                showProgress: false,
               );
             },
           ),
