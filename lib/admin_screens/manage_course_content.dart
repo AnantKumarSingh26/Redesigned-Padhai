@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Define a common gradient color variable
+const List<Color> gradientColors = [
+  Color.fromARGB(255, 243, 46, 24),
+  Color.fromARGB(172, 17, 0, 255),
+  Color.fromARGB(255, 0, 135, 245),
+  Color.fromARGB(255, 253, 106, 228),
+];
+
 class CourseManagementScreen extends StatefulWidget {
   const CourseManagementScreen({super.key});
 
@@ -62,7 +70,7 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
             crossAxisCount: isTablet ? 2 : 1,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: isTablet ? 1.5 : 2,
+            childAspectRatio: isTablet ? 1.5 : 1.8,
           ),
           itemCount: courses.length,
           itemBuilder: (context, index) {
@@ -102,11 +110,7 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
   child: Ink(
     decoration: BoxDecoration(
       gradient: const LinearGradient(
-        colors: [
-          Color.fromARGB(255, 245, 169, 71), // Blue 500
-          Color.fromARGB(255, 0, 135, 245), // Blue 500
-          Color.fromARGB(255, 214, 115, 197), // Blue 300
-        ],
+        colors: gradientColors,
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
@@ -454,79 +458,109 @@ class _CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              name,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12), // Match the Card's border radius
+      ),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.code, size: 16),
-                const SizedBox(width: 4),
-                Text(courseCode),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                const Icon(Icons.category, size: 16),
-                const SizedBox(width: 4),
-                Text(category),
-              ],
-            ),
-            const SizedBox(height: 4),
-            FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection('users_roles')
-                  .doc(instructorId)
-                  .get(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData && snapshot.data!.exists) {
-                  final instructorName = snapshot.data!['name'] ?? 'Unknown';
-                  return Row(
-                    children: [
-                      const Icon(Icons.person, size: 16),
-                      const SizedBox(width: 4),
-                      Text('Instructor: $instructorName'),
-                    ],
-                  );
-                }
-                return const SizedBox();
-              },
-            ),
-            const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: onEdit,
-                  tooltip: 'Edit',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: onDelete,
-                  tooltip: 'Delete',
-                  color: Colors.red,
-                ),
-                ElevatedButton(
-                  onPressed: onViewMaterials,
-                  child: const Text('Materials'),
-                ),
-              ],
-            ),
-          ],
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.code, size: 16),
+                  const SizedBox(width: 4),
+                  Text(courseCode),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  const Icon(Icons.category, size: 16),
+                  const SizedBox(width: 4),
+                  Text(category),
+                ],
+              ),
+              const SizedBox(height: 4),
+              FutureBuilder<DocumentSnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('users_roles')
+                    .doc(instructorId)
+                    .get(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data!.exists) {
+                    final instructorName = snapshot.data!['name'] ?? 'Unknown';
+                    return Row(
+                      children: [
+                        const Icon(Icons.person, size: 16),
+                        const SizedBox(width: 4),
+                        Text('Instructor: $instructorName'),
+                      ],
+                    );
+                  }
+                  return const SizedBox();
+                },
+              ),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.black),
+                    onPressed: onEdit,
+                    tooltip: 'Edit',
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.black),
+                    onPressed: onDelete,
+                    tooltip: 'Delete',
+                  ),
+                  MaterialButton(
+                    onPressed: onViewMaterials,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: gradientColors,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Container(
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: const Text(
+                          'Materials',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
