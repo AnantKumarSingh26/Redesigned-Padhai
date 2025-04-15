@@ -162,7 +162,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     children: [
                       _DashboardCard(
                         icon: Icons.library_books,
-                        title: 'Course Content',
+                        title: 'Courses',
                         description: 'Manage and update course materials.',
                         color: Colors.blue,
                         gradientColors: [Colors.blue.shade300, Colors.blue.shade700],
