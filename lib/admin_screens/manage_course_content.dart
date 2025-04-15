@@ -29,7 +29,6 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
             tabs: [
               Tab(text: 'All Courses'),
               Tab(text: 'Add New Course'),
-              Tab(text: 'Course Materials'),
             ],
           ),
         ),
@@ -37,7 +36,6 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
           children: [
             _buildCoursesList(isTablet),
             _buildAddCourseForm(),
-            _buildMaterialsManagement(),
           ],
         ),
       ),
@@ -64,7 +62,7 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
             crossAxisCount: isTablet ? 2 : 1,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
-            childAspectRatio: isTablet ? 1.5 : 1.2,
+            childAspectRatio: isTablet ? 1.5 : 2,
           ),
           itemCount: courses.length,
           itemBuilder: (context, index) {
@@ -92,29 +90,62 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
       child: Column(
         children: [
           ElevatedButton(
-            onPressed: () => _showAddCourseDialog(context),
-            child: const Text('Add New Course'),
+  onPressed: () => _showAddCourseDialog(context),
+  style: ElevatedButton.styleFrom(
+    padding: const EdgeInsets.all(16),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12), // Rounded corners for the button
+    ),
+    backgroundColor: Colors.transparent, // Make button background transparent
+    shadowColor: Colors.transparent, // Remove button shadow
+  ),
+  child: Ink(
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [
+          Color.fromARGB(255, 245, 169, 71), // Blue 500
+          Color.fromARGB(255, 0, 135, 245), // Blue 500
+          Color.fromARGB(255, 214, 115, 197), // Blue 300
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(12), 
+    ),
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      constraints: const BoxConstraints(minWidth: 88, minHeight: 36),
+      alignment: Alignment.center,
+      child: Column(
+        children: [
+          const Icon(
+            Icons.add,
+            size: 40,
+            color: Colors.white, 
           ),
+          const SizedBox(height: 10),
+          const Text(
+            'Add New Course',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+        ],
+      ),
+    ),
+  ),
+),
+
           const SizedBox(height: 20),
-          Image.asset('assets/images/add_course.png', height: 200),
         ],
       ),
     );
   }
 
-  Widget _buildMaterialsManagement() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('Select a course to manage its materials',
-              style: TextStyle(fontSize: 16)),
-          const SizedBox(height: 20),
-          Image.asset('assets/images/materials.png', height: 200),
-        ],
-      ),
-    );
-  }
 
   Future<void> _showAddCourseDialog(BuildContext context) async {
     final formKey = GlobalKey<FormState>();
