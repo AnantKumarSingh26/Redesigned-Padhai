@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:padhai/student_screens/all_courses.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:padhai/login.dart';
 import 'package:padhai/student_screens/update_info.dart';
@@ -24,6 +25,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   // Courses data
   List<Course> enrolledCourses = [];
   List<Course> recommendedCourses = [];
+  List<Course> adminCreatedCourses = [];
   bool isLoading = true;
   String errorMessage = '';
 
@@ -31,6 +33,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   void initState() {
     super.initState();
     _fetchUserData();
+    _fetchAdminCreatedCourses();
   }
 
   Future<void> _fetchUserData() async {
@@ -143,6 +146,33 @@ class _StudentDashboardState extends State<StudentDashboard> {
     }
   }
 
+  Future<void> _fetchAdminCreatedCourses() async {
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('courses')
+          .where('createdBy', isEqualTo: 'admin')
+          .get();
+
+      final List<Course> tempAdminCourses = querySnapshot.docs.map((doc) {
+        return Course(
+          doc['title'] ?? 'No Title',
+          doc['code'] ?? 'No Code',
+          _getIconForCourse(doc['code']),
+          0, // Admin-created courses have 0 progress
+          _getColorForCourse(doc['code']),
+        );
+      }).toList();
+
+      setState(() {
+        adminCreatedCourses = tempAdminCourses;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error loading admin-created courses: ${e.toString()}';
+      });
+    }
+  }
+
   IconData _getIconForCourse(String? code) {
     if (code == null) return Icons.school;
     if (code.contains('CS101')) return Icons.code;
@@ -242,25 +272,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
                           ),
                 
                 const SizedBox(height: 32),
-                
-                _buildSectionHeader('Recommended Courses', ''),
-                const SizedBox(height: 16),
-                
-                isLoading
-                    ? Shimmer.fromColors(
-                        baseColor: Colors.grey[300]!,
-                        highlightColor: Colors.grey[100]!,
-                        child: Column(
-                          children: List.generate(3, (index) => Container(
-                            height: 100,
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            color: Colors.white,
-                          )),
-                        ),
-                      )
-                    : recommendedCourses.isEmpty
-                        ? const Text('No recommendations available')
-                        :
+                const AllCourses(),
+               
                 const SizedBox(height: 32),
               ],
             ),
@@ -553,55 +566,4 @@ class Course {
   final Color color;
 
   const Course(this.title, this.code, this.icon, this.progress, this.color);
-}
-
-// Modify the RecommendedCoursesSection to show two courses consecutively
-class RecommendedCoursesSection extends StatelessWidget {
-  final List<Course> courses;
-  final VoidCallback onViewAll;
-
-  const RecommendedCoursesSection({
-    super.key,
-    required this.courses,
-    required this.onViewAll,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Recommended Courses',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 430, // Adjust height for two rows
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, // Two courses per row
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 3 / 2,
-            ),
-            itemCount: courses.length,
-            itemBuilder: (context, index) {
-              return CourseCard(
-                course: courses[index],
-                showProgress: false,
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
 }
