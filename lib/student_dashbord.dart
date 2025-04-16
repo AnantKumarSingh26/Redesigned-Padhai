@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:padhai/student_screens/recommended_courses.dart';
 import 'package:padhai/login.dart';
 import 'package:padhai/student_screens/update_info.dart';
 
@@ -67,10 +66,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
       setState(() {
         studentName = userData['name'] ?? 'No Name';
-        department = userData['department'] ?? 'No Department';
-        studentId = userData['studentId'] ?? 'No ID';
-        batch = userData['batch'] ?? 'No Batch';
-        semester = userData['semester'] ?? 'No Semester';
+        department = userData['qualification'] ?? 'No Qualification';
+        studentId = userData['contact'] ?? 'No Contact';
         email = userData['email'] ?? user.email ?? 'No Email';
       });
 
@@ -170,131 +167,119 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-        leading: IconButton(
-          icon: const Icon(Icons.logout, color: Colors.white),
+    return RefreshIndicator(
+      onRefresh: _fetchUserData,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: const Text('Dashboard'),
+          centerTitle: true,
+          backgroundColor: Colors.blueAccent,
+          leading: IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+                (route) => false,
+              );
+            },
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.notifications_outlined),
+              onPressed: () {},
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+                
+                if (errorMessage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      errorMessage,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                
+                StudentProfileCard(
+                  name: studentName,
+                  email: email,
+                  qualification: department,
+                  contact: studentId,
+                ),
+                const SizedBox(height: 32),
+                
+                _buildSectionHeader('My Courses', ''),
+                const SizedBox(height: 16),
+                
+                isLoading
+                    ? Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Column(
+                          children: List.generate(3, (index) => Container(
+                            height: 100,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            color: Colors.white,
+                          )),
+                        ),
+                      )
+                    : enrolledCourses.isEmpty
+                        ? const Text('No courses enrolled yet')
+                        : CourseHorizontalList(
+                            courses: enrolledCourses,
+                            showProgress: true,
+                          ),
+                
+                const SizedBox(height: 32),
+                
+                _buildSectionHeader('Recommended Courses', ''),
+                const SizedBox(height: 16),
+                
+                isLoading
+                    ? Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Column(
+                          children: List.generate(3, (index) => Container(
+                            height: 100,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            color: Colors.white,
+                          )),
+                        ),
+                      )
+                    : recommendedCourses.isEmpty
+                        ? const Text('No recommendations available')
+                        :
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
           onPressed: () {
-            FirebaseAuth.instance.signOut();
-            Navigator.pushAndRemoveUntil(
+            Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-              (route) => false,
+              MaterialPageRoute(builder: (context) => const UpdateInfoPage()),
             );
           },
+          child: const Icon(Icons.edit),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              
-              if (errorMessage.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Text(
-                    errorMessage,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-              
-              StudentProfileCard(
-                name: studentName,
-                department: department,
-                studentId: studentId,
-                batch: batch,
-                semester: semester,
-                email: email,
-              ),
-              const SizedBox(height: 32),
-              
-              _buildSectionHeader('My Courses', 'View All', () {
-                // Navigation to all courses
-              }),
-              const SizedBox(height: 16),
-              
-              isLoading
-                  ? Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Column(
-                        children: List.generate(3, (index) => Container(
-                          height: 100,
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          color: Colors.white,
-                        )),
-                      ),
-                    )
-                  : enrolledCourses.isEmpty
-                      ? const Text('No courses enrolled yet')
-                      : CourseHorizontalList(
-                          courses: enrolledCourses,
-                          showProgress: true,
-                        ),
-              
-              const SizedBox(height: 32),
-              
-              _buildSectionHeader('Recommended Courses', 'See All', () {
-                // Navigation to recommended courses
-              }),
-              const SizedBox(height: 16),
-              
-              isLoading
-                  ? Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
-                      child: Column(
-                        children: List.generate(3, (index) => Container(
-                          height: 100,
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          color: Colors.white,
-                        )),
-                      ),
-                    )
-                  : recommendedCourses.isEmpty
-                      ? const Text('No recommendations available')
-                      : RecommendedCoursesSection(
-                          courses: recommendedCourses,
-                          onViewAll: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const RecommendedCoursesPage()),
-                            );
-                          },
-                        ),
-              
-              const SizedBox(height: 32),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const UpdateInfoPage()),
-          );
-        },
-        child: const Icon(Icons.edit),
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title, String action, VoidCallback onPressed) {
+  Widget _buildSectionHeader(String title, String action) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Row(
@@ -306,16 +291,6 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   fontWeight: FontWeight.w600,
                 ),
           ),
-          TextButton(
-            onPressed: onPressed,
-            child: Text(
-              action,
-              style: const TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -324,20 +299,16 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
 class StudentProfileCard extends StatelessWidget {
   final String name;
-  final String department;
-  final String studentId;
-  final String batch;
-  final String semester;
   final String email;
+  final String qualification;
+  final String contact;
 
   const StudentProfileCard({
     super.key,
     required this.name,
-    required this.department,
-    required this.studentId,
-    required this.batch,
-    required this.semester,
     required this.email,
+    required this.qualification,
+    required this.contact,
   });
 
   @override
@@ -356,6 +327,7 @@ class StudentProfileCard extends StatelessWidget {
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -385,13 +357,6 @@ class StudentProfileCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      department,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: Colors.grey.shade600,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
                       email,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.grey.shade600,
@@ -408,9 +373,8 @@ class StudentProfileCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildInfoItem('ID', studentId),
-              _buildInfoItem('Batch', batch),
-              _buildInfoItem('Semester', semester),
+              _buildInfoItem('Qualification', qualification),
+              _buildInfoItem('Contact', contact.isNotEmpty ? contact : 'N/A'),
             ],
           ),
         ],
@@ -615,16 +579,6 @@ class RecommendedCoursesSection extends StatelessWidget {
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
-            ),
-            TextButton(
-              onPressed: onViewAll,
-              child: const Text(
-                'View All',
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
             ),
           ],
         ),

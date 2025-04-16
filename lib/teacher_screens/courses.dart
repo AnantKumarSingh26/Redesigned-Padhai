@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:padhai/teacher_screens/golive.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CoursesPage extends StatefulWidget {
   const CoursesPage({super.key});
@@ -96,61 +97,69 @@ class _CoursesPageState extends State<CoursesPage> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              subtitle: Text(
-                                course['code'] ?? 'No Code',
-                                style: const TextStyle(color: Colors.white70),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Category: ${course['category'] ?? 'N/A'}',
+                                    style: const TextStyle(color: Colors.white70),
+                                  ),
+                                  if (course['startTime'] != null && course['endTime'] != null)
+                                    Text(
+                                      'Time: ${DateFormat.jm().format((course['startTime'] as Timestamp).toDate())} - ${DateFormat.jm().format((course['endTime'] as Timestamp).toDate())}',
+                                      style: const TextStyle(color: Colors.white70),
+                                    ),
+                                ],
                               ),
                             ),
-                            ListTile(
-                              title: Column(
-                                children: [
-                                  if (course['startTime'] != null && course['endTime'] != null)
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 8.0),
-                                      child: Text(
-                                        'Live Time: ${DateFormat.jm().format((course['startTime'] as Timestamp).toDate())} - ${DateFormat.jm().format((course['endTime'] as Timestamp).toDate())}',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      final now = DateTime.now();
-                                      final startTime = course['startTime'] as Timestamp?;
-                                      final endTime = course['endTime'] as Timestamp?;
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    final now = DateTime.now();
+                                    final startTime = course['startTime'] as Timestamp?;
+                                    final endTime = course['endTime'] as Timestamp?;
 
-                                      if (startTime != null && endTime != null) {
-                                        final start = startTime.toDate();
-                                        final end = endTime.toDate();
+                                    if (startTime != null && endTime != null) {
+                                      final start = startTime.toDate();
+                                      final end = endTime.toDate();
 
-                                        if (now.isAfter(start) && now.isBefore(end)) {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => GoLivePage(courseId: course['id']),
-                                            ),
-                                          );
-                                        } else {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(
-                                              content: Text('You can only go live during the scheduled time.'),
-                                            ),
-                                          );
-                                        }
+                                      // Handle cases where the end time is on the next day
+                                      if ((now.isAfter(start) && now.isBefore(end)) ||
+                                          (start.isAfter(end) && (now.isAfter(start) || now.isBefore(end)))) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => GoLivePage(courseId: courses[index].id),
+                                          ),
+                                        );
                                       } else {
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           const SnackBar(
-                                            content: Text('Course timing not set.'),
+                                            content: Text('You can only go live during the scheduled time.'),
                                           ),
                                         );
                                       }
-                                    },
-                                    child: const Text('Go Live'),
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Course timing not set.'),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: Column(
+                                    children: [
+                                      const Text('Go Live'),
+                                      if (course['startTime'] != null && course['endTime'] != null)
+                                        Text(
+                                          'Live Period: ${DateFormat.jm().format((course['startTime'] as Timestamp).toDate())} - ${DateFormat.jm().format((course['endTime'] as Timestamp).toDate())}',
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ],
