@@ -110,6 +110,10 @@ class AllCourses extends StatelessWidget {
                             'Category: $category',
                             style: const TextStyle(color: Colors.white70),
                           ),
+                          Text(
+                            'Fee: ₹${course['fee'] ?? 'Not Specified'}',
+                            style: const TextStyle(color: Colors.white70),
+                          ),
                           const SizedBox(height: 16),
                           Center(
                             child: ElevatedButton(

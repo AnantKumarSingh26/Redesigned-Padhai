@@ -162,6 +162,7 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
     String? instructorId;
     TimeOfDay? startTime;
     TimeOfDay? endTime;
+    String fee = '';
     List<Map<String, dynamic>> teachers = [];
 
     // Fetch teachers from Firestore
@@ -261,6 +262,13 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
                           ? 'End Time: ${endTime!.format(context)}'
                           : 'Set End Time'),
                     ),
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: 'Course Fee (₹)'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? 'Required field' : null,
+                      onSaved: (value) => fee = value ?? '',
+                    ),
                   ],
                 ),
               ),
@@ -280,7 +288,7 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
                       );
                       return;
                     }
-                    await _addCourse(context, name, code, category, instructorId!, startTime!, endTime!);
+                    await _addCourse(context, name, code, category, instructorId!, startTime!, endTime!, fee);
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Course added successfully')),
@@ -414,7 +422,7 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
     );
   }
 
-  Future<void> _addCourse(BuildContext context, String name, String code, String category, String instructorId, TimeOfDay startTime, TimeOfDay endTime) async {
+  Future<void> _addCourse(BuildContext context, String name, String code, String category, String instructorId, TimeOfDay startTime, TimeOfDay endTime, String fee) async {
     try {
       final now = DateTime.now();
       final startDateTime = DateTime(now.year, now.month, now.day, startTime.hour, startTime.minute);
@@ -427,6 +435,7 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
         'instructorId': instructorId,
         'startTime': startDateTime,
         'endTime': endDateTime,
+        'fee': fee,
         'createdAt': FieldValue.serverTimestamp(),
         'materials': [],
         'mockTests': [],

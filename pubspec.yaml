@@ -42,8 +42,8 @@ dependencies:
   cloud_firestore: ^5.6.6
   shared_preferences: ^2.5.3
   shimmer: ^3.0.0
-  jitsi_meet:
-    path: ./jitsi_meet
+  #jitsi_meet:
+  #  path: ./jitsi_meet
 
 dev_dependencies:
   flutter_test:

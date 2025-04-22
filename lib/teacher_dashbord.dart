@@ -15,7 +15,7 @@ class TeacherDashboard extends StatefulWidget {
 }
 
 class _TeacherDashboardState extends State<TeacherDashboard> {
-  // Teacher data variables
+  // Teacher data 
   String teacherName = 'Loading...';
   String department = 'Loading...';
   String email = 'Loading...';
@@ -27,7 +27,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   @override
   void initState() {
     super.initState();
-    _resetTimestamp(); // Reset timestamp on dashboard load
+    _resetTimestamp(); 
     _fetchTeacherData();
     _fetchTodaysClasses();
   }
@@ -40,7 +40,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   Future<void> _fetchTeacherData() async {
     try {
-      // Get current authenticated user
+      // who  is the current user 
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         setState(() {
@@ -50,7 +50,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         return;
       }
 
-      // Query users_roles collection for the current teacher's data
+      // get data of current teacher
       final querySnapshot = await FirebaseFirestore.instance
           .collection('users_roles')
           .where('email', isEqualTo: user.email)
@@ -97,7 +97,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
   Future<void> _fetchTodaysClasses() async {
     try {
-      // Get today's date in YYYY-MM-DD format
+      // Frmat today's date to match the format in Firestore
       final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
       
       // Query schedule collection for today's classes
@@ -126,22 +126,27 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Teacher Dashboard'),
+        title: const Text('Teacher Dashboard',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
+        backgroundColor: Colors.blueAccent,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.logout,color: Colors.white,),
             onPressed: () {
-              setState(() {
-                isLoading = true;
-              });
-              _fetchTeacherData();
-              _fetchTodaysClasses();
+              FirebaseAuth.instance.signOut();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+                (route) => false,
+              );
             },
           ),
         ],
       ),
-      drawer: _buildDrawer(context),
       body: RefreshIndicator(
         onRefresh: () async {
           setState(() {
@@ -256,74 +261,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       SnackBar(
         content: Text(message),
         duration: const Duration(seconds: 1),
-      ),
-    );
-  }
-
-  Widget _buildDrawer(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        shrinkWrap: true, 
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 45,
-                  backgroundImage: profileImageUrl.isNotEmpty
-                      ? NetworkImage(profileImageUrl)
-                      : null,
-                  child: profileImageUrl.isEmpty
-                      ? const Icon(Icons.person, size: 45, color: Colors.white)
-                      : null,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  teacherName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  '$department Dept.',
-                  style: const TextStyle(color: Colors.white70),
-                ),
-              ],
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.dashboard),
-            title: const Text('Dashboard'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const TeacherDashboard()),
-              ).then((_) => _resetTimestamp());
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.calendar_today),
-            title: const Text('Schedule'),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: const Icon(Icons.exit_to_app),
-            title: const Text('Logout'),
-            onTap: () {
-              FirebaseAuth.instance.signOut();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
       ),
     );
   }
