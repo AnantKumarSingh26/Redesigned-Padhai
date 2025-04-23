@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:padhai/admin_dashbord.dart';
-import 'package:padhai/student_dashbord.dart';
+import 'package:padhai/admin_screens/admin_dashbord.dart';
+import 'package:padhai/student_screens/student_dashbord.dart';
 import 'package:padhai/signup.dart';
-import 'package:padhai/teacher_dashbord.dart';
+import 'package:padhai/teacher_screens/teacher_dashbord.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {

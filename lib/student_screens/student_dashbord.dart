@@ -28,12 +28,14 @@ class _StudentDashboardState extends State<StudentDashboard> {
   List<Course> adminCreatedCourses = [];
   bool isLoading = true;
   String errorMessage = '';
+  int tokens = 0;
 
   @override
   void initState() {
     super.initState();
     _fetchUserData();
     _fetchAdminCreatedCourses();
+    _fetchTokens();
   }
 
   Future<void> _fetchUserData() async {
@@ -173,6 +175,23 @@ class _StudentDashboardState extends State<StudentDashboard> {
     }
   }
 
+  Future<void> _fetchTokens() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final doc = await FirebaseFirestore.instance
+            .collection('users_roles')
+            .doc(user.uid)
+            .get();
+        setState(() {
+          tokens = doc['tokens'] ?? 0;
+        });
+      }
+    } catch (e) {
+      print('Error fetching tokens: $e');
+    }
+  }
+
   IconData _getIconForCourse(String? code) {
     if (code == null) return Icons.school;
     if (code.contains('CS101')) return Icons.code;
@@ -217,9 +236,18 @@ class _StudentDashboardState extends State<StudentDashboard> {
             },
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined),
-              onPressed: () {},
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Center(
+                child: Text(
+                  '$tokens',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
