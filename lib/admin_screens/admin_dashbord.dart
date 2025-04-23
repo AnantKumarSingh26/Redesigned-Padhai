@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'welcome_page.dart';
-import 'admin_screens/manage_user_accounts.dart'; 
-import 'admin_screens/manage_course_content.dart';
+import '../welcome_page.dart';
+import 'manage_user_accounts.dart'; 
+import 'manage_course_content.dart';
 
 
 class AdminDashboard extends StatelessWidget {

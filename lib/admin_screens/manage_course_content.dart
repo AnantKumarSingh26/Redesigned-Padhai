@@ -424,17 +424,17 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
 
   Future<void> _addCourse(BuildContext context, String name, String code, String category, String instructorId, TimeOfDay startTime, TimeOfDay endTime, String fee) async {
     try {
-      final now = DateTime.now();
-      final startDateTime = DateTime(now.year, now.month, now.day, startTime.hour, startTime.minute);
-      final endDateTime = DateTime(now.year, now.month, now.day, endTime.hour, endTime.minute);
+      // Store only the time component without the date
+      final startTimeString = '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
+      final endTimeString = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
 
       await _coursesCollection.add({
         'name': name,
         'code': code,
         'category': category,
         'instructorId': instructorId,
-        'startTime': startDateTime,
-        'endTime': endDateTime,
+        'startTime': startTimeString,
+        'endTime': endTimeString,
         'fee': fee,
         'createdAt': FieldValue.serverTimestamp(),
         'materials': [],

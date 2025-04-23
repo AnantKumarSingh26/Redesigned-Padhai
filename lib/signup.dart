@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:padhai/login.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -33,6 +34,14 @@ class _SignupPageState extends State<SignupPage> {
     'Post Graduate',
     'Other'
   ];
+
+  String _generateRandomPassword() {
+    // Generates a random 12-character password
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#\$%^&*()';
+    final random = Random.secure();
+    return String.fromCharCodes(Iterable.generate(
+      12, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
+  }
 
   Future<void> _signup() async {
     try {
@@ -68,7 +77,8 @@ class _SignupPageState extends State<SignupPage> {
 
       // Save additional info to users_roles collection
       if (userCredential.user != null) {
-        await _firestore.collection('users_roles').doc(userCredential.user!.uid).set({
+        // Initialize user data with tokens for students
+        final userData = {
           'name': name,
           'email': email,
           'role': _selectedRole,
@@ -76,12 +86,21 @@ class _SignupPageState extends State<SignupPage> {
           'contact': contact,
           'createdAt': FieldValue.serverTimestamp(),
           'hasSetPassword': false, // Track if user has set their password
-        });
+        };
+
+        // Add tokens field only for students
+        if (_selectedRole == 'student') {
+          userData['tokens'] = 1000; // Initial token balance for new students
+        }
+
+        await _firestore.collection('users_roles').doc(userCredential.user!.uid).set(userData);
 
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account created successfully! Check your email to set your password.'),
+          SnackBar(
+            content: Text(_selectedRole == 'student'
+              ? 'Account created successfully! Check your email to set your password. You received 1000 tokens!'
+              : 'Account created successfully! Check your email to set your password.'),
             backgroundColor: Colors.green,
           ),
         );
@@ -105,14 +124,6 @@ class _SignupPageState extends State<SignupPage> {
         _isLoading = false;
       });
     }
-  }
-
-  String _generateRandomPassword() {
-    // Generates a random 12-character password
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#\$%^&*()';
-    final random = Random.secure();
-    return String.fromCharCodes(Iterable.generate(
-      12, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
   }
 
   @override
