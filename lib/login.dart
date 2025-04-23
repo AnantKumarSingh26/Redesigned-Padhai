@@ -35,8 +35,16 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
     try {
-      final String email = _emailController.text.trim();
-      final String password = _passwordController.text.trim();
+      final String email = _emailController.text.trim().toLowerCase();
+      final String password = _passwordController.text;
+
+      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+        setState(() {
+          _errorMessage = 'Please enter a valid email address';
+          _isLoading = false;
+        });
+        return;
+      }
 
       if (email.isEmpty || password.isEmpty) {
         setState(() {
@@ -46,20 +54,26 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
 
+      print('Attempting to login with email: $email');
+
       final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       if (userCredential.user != null) {
+        print('Authentication successful. Getting user role...');
         final userDoc = await _firestore.collection('users_roles').doc(userCredential.user!.uid).get();
 
         if (userDoc.exists && userDoc.data()!.containsKey('role')) {
-          final userRole = userDoc.data()!['role'];
+          final userRole = userDoc.data()!['role'].toString().toLowerCase();
+          print('User Role found: $userRole');
 
           final SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setInt('loginTimestamp', DateTime.now().millisecondsSinceEpoch);
-          prefs.setString('userRole', userRole);
+          await prefs.setInt('loginTimestamp', DateTime.now().millisecondsSinceEpoch);
+          await prefs.setString('userRole', userRole);
+
+          if (!mounted) return;
 
           if (userRole == 'admin') {
             Navigator.pushReplacement(
@@ -71,28 +85,45 @@ class _LoginPageState extends State<LoginPage> {
               context,
               MaterialPageRoute(builder: (context) => const TeacherDashboard()),
             ).then((_) => _resetTimestamp());
-          } else {
+          } else if (userRole == 'student') {
+            print('Navigating to Student Dashboard');
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const StudentDashboard()),
             ).then((_) => _resetTimestamp());
+          } else {
+            setState(() {
+              _errorMessage = 'Invalid user role: $userRole';
+              _isLoading = false;
+            });
           }
+        } else {
+          setState(() {
+            _errorMessage = 'User role not found. Please contact support.';
+            _isLoading = false;
+          });
         }
       }
     } on FirebaseAuthException catch (e) {
+      print('Firebase Auth Error: ${e.code} - ${e.message}');
       setState(() {
         if (e.code == 'user-not-found') {
           _errorMessage = 'No user found for that email.';
         } else if (e.code == 'wrong-password') {
           _errorMessage = 'Wrong password provided for that user.';
+        } else if (e.code == 'invalid-email') {
+          _errorMessage = 'Invalid email format.';
+        } else if (e.code == 'invalid-credential') {
+          _errorMessage = 'Invalid email or password.';
         } else {
-          _errorMessage = 'An error occurred during login: ${e.message}';
+          _errorMessage = 'Login error: ${e.message}';
         }
         _isLoading = false;
       });
     } catch (e) {
+      print('Unexpected error: $e');
       setState(() {
-        _errorMessage = 'An unexpected error occurred: $e';
+        _errorMessage = 'An unexpected error occurred. Please try again.';
         _isLoading = false;
       });
     }
@@ -147,6 +178,7 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text(
           'Padhai',
           style: TextStyle(
@@ -157,13 +189,6 @@ class _LoginPageState extends State<LoginPage> {
         ),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.keyboard_double_arrow_left_outlined,
-            color: Colors.white,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: Padding(
         padding: EdgeInsets.all(isTablet ? 30.0 : 20.0),

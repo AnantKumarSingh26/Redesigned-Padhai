@@ -15,6 +15,24 @@ class CoursesPage extends StatefulWidget {
 class _CoursesPageState extends State<CoursesPage> {
   String? instructorId;
 
+  String _formatTime(dynamic timeValue) {
+    try {
+      if (timeValue is Timestamp) {
+        return DateFormat.jm().format(timeValue.toDate());
+      } else if (timeValue is String) {
+        final parts = timeValue.split(':');
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        final period = hour >= 12 ? 'PM' : 'AM';
+        final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+        return '$displayHour:${minute.toString().padLeft(2, '0')} $period';
+      }
+      return timeValue.toString();
+    } catch (e) {
+      return timeValue.toString();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -106,7 +124,7 @@ class _CoursesPageState extends State<CoursesPage> {
                                   ),
                                   if (course['startTime'] != null && course['endTime'] != null)
                                     Text(
-                                      'Time: ${DateFormat.jm().format((course['startTime'] as Timestamp).toDate())} - ${DateFormat.jm().format((course['endTime'] as Timestamp).toDate())}',
+                                      'Time: ${_formatTime(course['startTime'])} - ${_formatTime(course['endTime'])}',
                                       style: const TextStyle(color: Colors.white70),
                                     ),
                                 ],
@@ -154,7 +172,7 @@ class _CoursesPageState extends State<CoursesPage> {
                                       const Text('Go Live'),
                                       if (course['startTime'] != null && course['endTime'] != null)
                                         Text(
-                                          'Live Period: ${DateFormat.jm().format((course['startTime'] as Timestamp).toDate())} - ${DateFormat.jm().format((course['endTime'] as Timestamp).toDate())}',
+                                          'Live Period: ${_formatTime(course['startTime'])} - ${_formatTime(course['endTime'])}',
                                           style: const TextStyle(fontSize: 12),
                                         ),
                                     ],
