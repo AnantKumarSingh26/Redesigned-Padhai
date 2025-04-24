@@ -370,7 +370,7 @@ class _LoginPageState extends State<LoginPage> {
       persistentFooterButtons: [
         Center(
           child: Text(
-            'Powered by @Padhai',
+            'Powered by @Anant',
             style: TextStyle(color: Colors.grey[700]),
           ),
         ),
