@@ -77,14 +77,23 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
           itemBuilder: (context, index) {
             final course = courses[index];
             final data = course.data() as Map<String, dynamic>;
+            // Fix type casting for startTime and endTime
+            final startTime = data['startTime'] is Timestamp
+                ? (data['startTime'] as Timestamp).toDate()
+                : null;
+            final endTime = data['endTime'] is Timestamp
+                ? (data['endTime'] as Timestamp).toDate()
+                : null;
+
+            // Update _CourseCard instantiation
             return _CourseCard(
               courseId: course.id,
               name: data['name'] ?? 'No Name',
               courseCode: data['code'] ?? 'N/A',
               category: data['category'] ?? 'General',
               instructorId: data['instructorId'],
-              startTime: (data['startTime'] as Timestamp?)?.toDate(),
-              endTime: (data['endTime'] as Timestamp?)?.toDate(),
+              startTime: startTime,
+              endTime: endTime,
               onEdit: () => _showEditCourseDialog(context, course.id, data),
               onDelete: () => _deleteCourse(course.id),
               onViewMaterials: () => _viewCourseMaterials(context, course.id),
@@ -306,13 +315,19 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
     );
   }
 
-  Future<void> _showEditCourseDialog(
-      BuildContext context, String courseId, Map<String, dynamic> data) async {
+  Future<void> _showEditCourseDialog(BuildContext context, String courseId, Map<String, dynamic> data) async {
     final formKey = GlobalKey<FormState>();
     String name = data['name'] ?? '';
     String code = data['code'] ?? '';
     String category = data['category'] ?? 'General';
     String? instructorId = data['instructorId'];
+    TimeOfDay? startTime = data['startTime'] is Timestamp
+        ? TimeOfDay.fromDateTime((data['startTime'] as Timestamp).toDate())
+        : null;
+    TimeOfDay? endTime = data['endTime'] is Timestamp
+        ? TimeOfDay.fromDateTime((data['endTime'] as Timestamp).toDate())
+        : null;
+    String fee = data['fee'] ?? '';
     List<Map<String, dynamic>> teachers = [];
 
     // Fetch teachers from Firestore
@@ -381,6 +396,47 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
                       validator: (value) =>
                           value == null ? 'Please select an instructor' : null,
                     ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final selectedTime = await showTimePicker(
+                          context: context,
+                          initialTime: startTime ?? TimeOfDay.now(),
+                        );
+                        if (selectedTime != null) {
+                          setState(() {
+                            startTime = selectedTime;
+                          });
+                        }
+                      },
+                      child: Text(startTime != null
+                          ? 'Start Time: ${startTime!.format(context)}'
+                          : 'Set Start Time'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final selectedTime = await showTimePicker(
+                          context: context,
+                          initialTime: endTime ?? TimeOfDay.now(),
+                        );
+                        if (selectedTime != null) {
+                          setState(() {
+                            endTime = selectedTime;
+                          });
+                        }
+                      },
+                      child: Text(endTime != null
+                          ? 'End Time: ${endTime!.format(context)}'
+                          : 'Set End Time'),
+                    ),
+                    TextFormField(
+                      initialValue: fee,
+                      decoration: const InputDecoration(labelText: 'Course Fee (₹)'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? 'Required field' : null,
+                      onSaved: (value) => fee = value ?? '',
+                    ),
                   ],
                 ),
               ),
@@ -394,13 +450,7 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
                 onPressed: () async {
                   if (formKey.currentState?.validate() ?? false) {
                     formKey.currentState?.save();
-                    if (instructorId == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please select an instructor')),
-                      );
-                      return;
-                    }
-                    await _updateCourse(courseId, name, code, category, instructorId!);
+                    await _updateCourse(courseId, name, code, category, instructorId, startTime, endTime, fee);
                     Navigator.pop(context);
                   }
                 },
@@ -454,15 +504,23 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
     }
   }
 
-  Future<void> _updateCourse(
-      String courseId, String name, String code, String category, String instructorId) async {
+  Future<void> _updateCourse(String courseId, String name, String code, String category, String? instructorId, TimeOfDay? startTime, TimeOfDay? endTime, String fee) async {
     try {
+      final startTimeString = startTime != null
+          ? '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}'
+          : null;
+      final endTimeString = endTime != null
+          ? '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}'
+          : null;
+
       await _coursesCollection.doc(courseId).update({
         'name': name,
         'code': code,
         'category': category,
         'instructorId': instructorId,
-        'updatedAt': FieldValue.serverTimestamp(),
+        'startTime': startTimeString,
+        'endTime': endTimeString,
+        'fee': fee,
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Course updated successfully')),
