@@ -221,7 +221,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          title: const Text('Dashboard'),
+          title: const Text('Dashboard',
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
           centerTitle: true,
           backgroundColor: Colors.blueAccent,
           leading: IconButton(
@@ -238,14 +239,49 @@ class _StudentDashboardState extends State<StudentDashboard> {
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
-              child: Center(
-                child: Text(
-                  '$tokens',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4), // Reduced horizontal padding
+                decoration: BoxDecoration(
+                  color: Colors.white, // Background color
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.3),
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.monetization_on, // Token symbol
+                      color: Colors.green, // Symbol color
+                      size: 20,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$tokens',
+                      style: const TextStyle(
+                        color: Colors.blue, // Text color
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 4), // Reduced spacing
+                    GestureDetector(
+                      onTap: () {
+                        // Future implementation for adding tokens
+                        print('Add tokens button clicked');
+                      },
+                      child: Icon(
+                        Icons.add_circle, // Add button
+                        color: Colors.blue, // Add button color
+                        size: 20,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
