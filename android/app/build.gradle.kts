@@ -10,8 +10,8 @@ plugins {
 
 android {
     namespace = "com.example.padhai"
-    compileSdk = 34
-    ndkVersion = "26.3.11579264"
+    compileSdk = 35
+    ndkVersion = "29.0.13113456"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
