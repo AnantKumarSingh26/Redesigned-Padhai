@@ -29,6 +29,7 @@ class _LoginPageState extends State<LoginPage> {
     print('Timestamp reset to: ${DateTime.now()}');
   }
 
+  // Add additional debug logs to the `_login` method to capture more details during the login process.
   Future<void> _login() async {
     setState(() {
       _errorMessage = '';
@@ -62,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (userCredential.user != null) {
-        print('Authentication successful. Getting user role...');
+        print('Authentication successful. User ID: ${userCredential.user!.uid}');
         final userDoc = await _firestore.collection('users_roles').doc(userCredential.user!.uid).get();
 
         if (userDoc.exists && userDoc.data()!.containsKey('role')) {
@@ -98,6 +99,7 @@ class _LoginPageState extends State<LoginPage> {
             });
           }
         } else {
+          print('User role not found in Firestore for user ID: ${userCredential.user!.uid}');
           setState(() {
             _errorMessage = 'User role not found. Please contact support.';
             _isLoading = false;
@@ -370,7 +372,7 @@ class _LoginPageState extends State<LoginPage> {
       persistentFooterButtons: [
         Center(
           child: Text(
-            'Powered by @Anant',
+            'Powered by @Infinity Labs',
             style: TextStyle(color: Colors.grey[700]),
           ),
         ),

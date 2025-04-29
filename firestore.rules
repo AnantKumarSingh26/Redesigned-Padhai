@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users_roles/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isStudent() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users_roles/$(request.auth.uid)).data.role == 'student';
+    }
+
+    // Allow students to enroll in courses
+    match /courses/{courseId}/enrollments/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth.uid == userId && isStudent();
+    }
+
+    // Allow enrollment creation
+    match /enrollments/{enrollmentId} {
+      allow read: if request.auth != null && resource.data.studentId == request.auth.uid;
+      allow create: if request.auth != null && 
+                    request.resource.data.studentId == request.auth.uid && 
+                    isStudent();
+    }
+
+    // Allow token updates
+    match /users_roles/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth.uid == userId;
+    }
+  }
+}

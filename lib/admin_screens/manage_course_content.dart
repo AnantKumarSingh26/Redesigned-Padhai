@@ -474,15 +474,16 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
 
   Future<void> _addCourse(BuildContext context, String name, String code, String category, String instructorId, TimeOfDay startTime, TimeOfDay endTime, String fee) async {
     try {
-      // Store only the time component without the date
       final startTimeString = '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
       final endTimeString = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
 
-      await _coursesCollection.add({
+      final instructorRef = _usersCollection.doc(instructorId); // Convert instructorId to DocumentReference
+
+      final newCourseRef = await _coursesCollection.add({
         'name': name,
         'code': code,
         'category': category,
-        'instructorId': instructorId,
+        'instructorId': instructorRef, // Store as DocumentReference
         'startTime': startTimeString,
         'endTime': endTimeString,
         'fee': fee,
@@ -490,6 +491,11 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
         'materials': [],
         'mockTests': [],
       });
+
+      await newCourseRef.collection('enrollments').doc('_init').set({
+        'initializedAt': FieldValue.serverTimestamp(),
+      });
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Course added successfully')),
