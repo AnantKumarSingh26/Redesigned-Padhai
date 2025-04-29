@@ -6,49 +6,53 @@ class MyCourses extends StatelessWidget {
 
   const MyCourses({Key? key, required this.studentId}) : super(key: key);
 
-  Future<List<Map<String, dynamic>>> _fetchEnrolledCourses() async {
-    final enrollmentSnapshot = await FirebaseFirestore.instance
-        .collection('enrollments')
-        .where('studentId', isEqualTo: studentId)
-        .get();
+  // Update the _fetchEnrolledCourses method in my_courses.dart
+Future<List<Map<String, dynamic>>> _fetchEnrolledCourses() async {
+  final enrollmentSnapshot = await FirebaseFirestore.instance
+      .collection('enrollments')
+      .where('studentId', isEqualTo: studentId)
+      .get();
 
-    List<Map<String, dynamic>> courses = [];
+  List<Map<String, dynamic>> courses = [];
 
-    for (var enrollmentDoc in enrollmentSnapshot.docs) {
-      final enrollmentData = enrollmentDoc.data();
-      final courseId = enrollmentData['courseId'];
+  for (var enrollmentDoc in enrollmentSnapshot.docs) {
+    final enrollmentData = enrollmentDoc.data();
+    final courseId = enrollmentData['courseId'];
 
-      if (courseId != null) {
-        final courseDoc = await FirebaseFirestore.instance
-            .collection('courses')
-            .doc(courseId)
-            .get();
+    if (courseId != null) {
+      final courseDoc = await FirebaseFirestore.instance
+          .collection('courses')
+          .doc(courseId)
+          .get();
 
-        if (courseDoc.exists) {
-          final courseData = courseDoc.data()!;
-          final teacherRef = courseData['teacher'] as DocumentReference?;
+      if (courseDoc.exists) {
+        final courseData = courseDoc.data()!;
+        final teacherRef = courseData['instructorId'] as DocumentReference?;
 
-          String teacherName = 'No Teacher';
-          if (teacherRef != null) {
-            final teacherDoc = await teacherRef.get();
-            if (teacherDoc.exists) {
-              teacherName = teacherDoc['name'] ?? 'No Teacher';
-            }
+        String teacherName = 'No Teacher';
+        if (teacherRef != null) {
+          final teacherDoc = await teacherRef.get();
+          if (teacherDoc.exists) {
+            teacherName = teacherDoc['name'] ?? 'No Teacher';
           }
-
-          courses.add({
-            'courseName': courseData['name'] ?? 'No Name',
-            'timing': courseData['timing'] ?? 'No Timing',
-            'teacherName': teacherName,
-            'category': courseData['category'] ?? 'No Category',
-            'fee': courseData['fee'] ?? 'No Fee',
-          });
         }
+
+        courses.add({
+          'courseName': courseData['name'] ?? 'No Name',
+          'timing': courseData['startTime'] != null && courseData['endTime'] != null
+              ? '${courseData['startTime']} - ${courseData['endTime']}'
+              : 'No Timing',
+          'teacherName': teacherName,
+          'category': courseData['category'] ?? 'No Category',
+          'fee': courseData['fee']?.toString() ?? 'No Fee',
+          'progress': enrollmentData['progress'] ?? 0,
+        });
       }
     }
-
-    return courses;
   }
+
+  return courses;
+}
 
   @override
   Widget build(BuildContext context) {
