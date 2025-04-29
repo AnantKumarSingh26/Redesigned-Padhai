@@ -5,6 +5,7 @@ import 'package:padhai/student_screens/all_courses.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:padhai/login.dart';
 import 'package:padhai/student_screens/update_info.dart';
+import 'package:padhai/student_screens/my_courses.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -90,30 +91,25 @@ class _StudentDashboardState extends State<StudentDashboard> {
     try {
       // Fetch enrolled courses
       final enrolledQuery = await FirebaseFirestore.instance
-          .collection('enrollments')
-          .where('userId', isEqualTo: userId)
+          .collection('courses')
           .get();
 
       final List<Course> tempEnrolled = [];
-      
-      for (final enrollmentDoc in enrolledQuery.docs) {
-        final enrollmentData = enrollmentDoc.data();
-        final courseRef = enrollmentData['courseId'] as DocumentReference?;
-        
-        if (courseRef != null) {
-          final courseDoc = await courseRef.get();
-          
-          if (courseDoc.exists) {
-            tempEnrolled.add(
-              Course(
-                courseDoc['title'] ?? 'No Title',
-                courseDoc['code'] ?? 'No Code',
-                _getIconForCourse(courseDoc['code']),
-                (enrollmentData['progress'] ?? 0).toInt(),
-                _getColorForCourse(courseDoc['code']),
-              ),
-            );
-          }
+
+      for (final courseDoc in enrolledQuery.docs) {
+        final enrollmentsRef = courseDoc.reference.collection('enrollments');
+        final enrollmentDoc = await enrollmentsRef.doc(userId).get();
+
+        if (enrollmentDoc.exists) {
+          tempEnrolled.add(
+            Course(
+              courseDoc['title'] ?? 'No Title',
+              courseDoc['code'] ?? 'No Code',
+              _getIconForCourse(courseDoc['code']),
+              (enrollmentDoc['progress'] ?? 0).toInt(),
+              _getColorForCourse(courseDoc['code']),
+            ),
+          );
         }
       }
 
@@ -313,7 +309,17 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 ),
                 const SizedBox(height: 32),
                 
-                _buildSectionHeader('My Courses', ''),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'My Courses',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 16),
                 
                 isLoading

@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Function to check if the user is an admin
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users_roles/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Allow authenticated users to read all user roles (to support queries by email)
+    match /users_roles/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Allow authenticated users to read and write enrollments subcollection
+    match /courses/{courseId}/enrollments/{userId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Allow authenticated users to read courses
+    match /courses/{courseId} {
+      allow read: if request.auth != null;
+      // Allow admins to write courses
+      allow write: if isAdmin();
+    }
+
+    // Allow admins to read and write all courses
+    match /courses/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // Allow authenticated users to read schedule collection
+    match /schedule/{document=**} {
+      allow read: if request.auth != null;
+    }
+
+    // Allow authenticated users to read and write their own enrollments in top-level enrollments collection
+    match /enrollments/{enrollmentId} {
+      allow read, write: if request.auth != null && resource.data.studentId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.studentId == request.auth.uid;
+    }
+  }
+}
