@@ -21,5 +21,5 @@ A Flutter-based learning platform connecting students with courses, featuring to
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/Redesigned-Padhai.git
+   git clone https://github.com/AnantKumarSingh26/Redesigned-Padhai.git
    cd Redesigned-Padhai
