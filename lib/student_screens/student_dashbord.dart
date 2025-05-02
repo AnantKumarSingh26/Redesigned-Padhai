@@ -406,6 +406,14 @@ class _StudentDashboardState extends State<StudentDashboard> {
                                                     fontSize: 14,
                                                   ),
                                                 ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  'Timing: ${course.timing}',
+                                                  style: TextStyle(
+                                                    color: Colors.white.withOpacity(0.8),
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                           ),

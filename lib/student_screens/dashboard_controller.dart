@@ -108,12 +108,14 @@ class DashboardController {
             final courseData = courseDoc.data()!;
             enrolledCourses.add(
               Course(
-                courseDoc.id, // Assign the course ID
+                courseDoc.id,
                 courseData['name'] ?? 'No Name',
-                courseData['name'] ?? 'No Title', // Corrected parameter
+                courseData['name'] ?? 'No Title',
                 courseData['code'] ?? 'No Code',
                 _getIconForCourse(courseData['code']),
                 _getColorForCourse(courseData['code']),
+                startTime: courseData['startTime'],
+                endTime: courseData['endTime'],
               ),
             );
           }
@@ -134,13 +136,16 @@ class DashboardController {
 
       final recommendedSnapshot = await recommendedQuery.limit(3).get();
       final recommendedCourses = recommendedSnapshot.docs.map((doc) {
+        final courseData = doc.data() as Map<String, dynamic>;
         return Course(
-          doc.id, // Assign the course ID
-          doc['name'] ?? 'No Name',
-          doc['name'] ?? 'No Title', // Corrected parameter
-          doc['code'] ?? 'No Code',
-          _getIconForCourse(doc['code']),
-          _getColorForCourse(doc['code']),
+          doc.id,
+          courseData['name'] ?? 'No Name',
+          courseData['name'] ?? 'No Title',
+          courseData['code'] ?? 'No Code',
+          _getIconForCourse(courseData['code']),
+          _getColorForCourse(courseData['code']),
+          startTime: courseData['startTime'],
+          endTime: courseData['endTime'],
         );
       }).toList();
 
@@ -155,7 +160,6 @@ class DashboardController {
 
   Future<List<Course>> fetchEnrolledCourses(String userId) async {
     try {
-      // Get all enrollments for the student
       final enrolledQuery = await _firestore
           .collection('enrollments')
           .where('studentId', isEqualTo: userId)
@@ -164,7 +168,6 @@ class DashboardController {
       final List<Course> enrolledCourses = [];
       final List<Future<void>> courseFetches = [];
 
-      // Create a list of futures for parallel processing
       for (final enrollmentDoc in enrolledQuery.docs) {
         final courseId = enrollmentDoc.data()['courseId'];
         if (courseId != null) {
@@ -184,6 +187,8 @@ class DashboardController {
                     courseData['code'] ?? 'No Code',
                     _getIconForCourse(courseData['code']),
                     _getColorForCourse(courseData['code']),
+                    startTime: courseData['startTime'],
+                    endTime: courseData['endTime'],
                   ),
                 );
               }
@@ -192,12 +197,8 @@ class DashboardController {
         }
       }
 
-      // Wait for all course fetches to complete
       await Future.wait(courseFetches);
-
-      // Sort courses by name for consistent display
       enrolledCourses.sort((a, b) => a.name.compareTo(b.name));
-
       return enrolledCourses;
     } catch (e) {
       throw Exception('Error fetching enrolled courses: ${e.toString()}');
@@ -226,5 +227,29 @@ class DashboardController {
     // Ensure the index is within bounds
     final index = (code?.hashCode ?? 0) % colors.length;
     return colors[index.abs()];
+  }
+
+  Future<String?> _getTeacherName(dynamic instructorField) async {
+    if (instructorField == null) return null;
+    
+    try {
+      String teacherId;
+      if (instructorField is DocumentReference) {
+        teacherId = instructorField.id;
+      } else if (instructorField is String) {
+        teacherId = instructorField;
+      } else {
+        return null;
+      }
+
+      final teacherDoc = await _firestore
+          .collection('users_roles')
+          .doc(teacherId)
+          .get();
+
+      return teacherDoc.data()?['name'] ?? 'Unknown Teacher';
+    } catch (e) {
+      return null;
+    }
   }
 }

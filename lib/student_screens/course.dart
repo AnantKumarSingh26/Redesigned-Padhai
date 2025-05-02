@@ -1,13 +1,28 @@
 import 'package:flutter/material.dart';
 
 class Course {
-  final String id; // Add id property
-  final String name; // Add name property
+  final String id;
+  final String name;
   final String title;
   final String code;
   final IconData icon;
   final Color color;
+  final String? startTime;
+  final String? endTime;
 
-  // Removed progress property as it is not part of the database schema
-  Course(this.id, this.name, this.title, this.code, this.icon, this.color);
+  Course(
+    this.id,
+    this.name,
+    this.title,
+    this.code,
+    this.icon,
+    this.color, {
+    this.startTime,
+    this.endTime,
+  });
+
+  String get timing =>
+      startTime != null && endTime != null
+          ? '$startTime - $endTime'
+          : 'No Timing';
 }
