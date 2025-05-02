@@ -59,36 +59,7 @@ class CourseCard extends StatelessWidget {
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                 ),
                 if (showProgress) ...[
-                  const SizedBox(height: 12),
-                  LinearProgressIndicator(
-                    value: course.progress / 100,
-                    backgroundColor: Colors.grey.shade200,
-                    color: course.color,
-                    minHeight: 6,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${course.progress}%',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        'Continue',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: course.color,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                  // Removed progress-related UI as it is not part of the Course class
                 ],
               ],
             ),

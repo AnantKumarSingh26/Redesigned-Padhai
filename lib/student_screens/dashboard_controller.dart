@@ -7,6 +7,57 @@ class DashboardController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  // Add stream for real-time token updates
+  Stream<int> get tokenStream {
+    final user = _auth.currentUser;
+    if (user == null) return Stream.value(0);
+
+    return _firestore
+        .collection('users_roles')
+        .doc(user.uid)
+        .snapshots()
+        .map((doc) => doc.data()?['tokens'] ?? 0);
+  }
+
+  // Method to update tokens after course enrollment
+  Future<void> updateTokensAfterEnrollment(int courseFee) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('User not logged in');
+
+      final userDoc = _firestore.collection('users_roles').doc(user.uid);
+      
+      // Get current tokens
+      final userData = await userDoc.get();
+      final currentTokens = userData.data()?['tokens'] ?? 0;
+      
+      // Update tokens
+      await userDoc.update({
+        'tokens': currentTokens - courseFee,
+      });
+    } catch (e) {
+      throw Exception('Error updating tokens: ${e.toString()}');
+    }
+  }
+
+  // Method to check if user has enough tokens
+  Future<bool> hasEnoughTokens(int requiredTokens) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+
+      final userDoc = await _firestore
+          .collection('users_roles')
+          .doc(user.uid)
+          .get();
+
+      final currentTokens = userDoc.data()?['tokens'] ?? 0;
+      return currentTokens >= requiredTokens;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<Map<String, dynamic>> fetchUserData() async {
     try {
       final user = _auth.currentUser;
@@ -57,10 +108,11 @@ class DashboardController {
             final courseData = courseDoc.data()!;
             enrolledCourses.add(
               Course(
-                courseData['name'] ?? 'No Title',
+                courseDoc.id, // Assign the course ID
+                courseData['name'] ?? 'No Name',
+                courseData['name'] ?? 'No Title', // Corrected parameter
                 courseData['code'] ?? 'No Code',
                 _getIconForCourse(courseData['code']),
-                (enrollmentDoc['progress'] ?? 0).toInt(),
                 _getColorForCourse(courseData['code']),
               ),
             );
@@ -83,10 +135,11 @@ class DashboardController {
       final recommendedSnapshot = await recommendedQuery.limit(3).get();
       final recommendedCourses = recommendedSnapshot.docs.map((doc) {
         return Course(
-          doc['name'] ?? 'No Title',
+          doc.id, // Assign the course ID
+          doc['name'] ?? 'No Name',
+          doc['name'] ?? 'No Title', // Corrected parameter
           doc['code'] ?? 'No Code',
           _getIconForCourse(doc['code']),
-          0,
           _getColorForCourse(doc['code']),
         );
       }).toList();
@@ -97,6 +150,57 @@ class DashboardController {
       };
     } catch (e) {
       throw Exception('Error loading courses: ${e.toString()}');
+    }
+  }
+
+  Future<List<Course>> fetchEnrolledCourses(String userId) async {
+    try {
+      // Get all enrollments for the student
+      final enrolledQuery = await _firestore
+          .collection('enrollments')
+          .where('studentId', isEqualTo: userId)
+          .get();
+
+      final List<Course> enrolledCourses = [];
+      final List<Future<void>> courseFetches = [];
+
+      // Create a list of futures for parallel processing
+      for (final enrollmentDoc in enrolledQuery.docs) {
+        final courseId = enrollmentDoc.data()['courseId'];
+        if (courseId != null) {
+          courseFetches.add(
+            _firestore
+                .collection('courses')
+                .doc(courseId)
+                .get()
+                .then((courseDoc) {
+              if (courseDoc.exists) {
+                final courseData = courseDoc.data()!;
+                enrolledCourses.add(
+                  Course(
+                    courseDoc.id,
+                    courseData['name'] ?? 'No Name',
+                    courseData['name'] ?? 'No Title',
+                    courseData['code'] ?? 'No Code',
+                    _getIconForCourse(courseData['code']),
+                    _getColorForCourse(courseData['code']),
+                  ),
+                );
+              }
+            }),
+          );
+        }
+      }
+
+      // Wait for all course fetches to complete
+      await Future.wait(courseFetches);
+
+      // Sort courses by name for consistent display
+      enrolledCourses.sort((a, b) => a.name.compareTo(b.name));
+
+      return enrolledCourses;
+    } catch (e) {
+      throw Exception('Error fetching enrolled courses: ${e.toString()}');
     }
   }
 
@@ -119,6 +223,8 @@ class DashboardController {
       Colors.teal,
       Colors.indigo,
     ];
-    return colors[code?.hashCode ?? 0 % colors.length];
+    // Ensure the index is within bounds
+    final index = (code?.hashCode ?? 0) % colors.length;
+    return colors[index.abs()];
   }
 }

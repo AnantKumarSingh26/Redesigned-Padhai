@@ -1,135 +1,237 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:padhai/student_screens/course.dart';
+import 'package:padhai/student_screens/dashboard_controller.dart';
+import 'package:shimmer/shimmer.dart';
 
 class MyCourses extends StatelessWidget {
   final String studentId;
 
   const MyCourses({Key? key, required this.studentId}) : super(key: key);
 
-  // Update the _fetchEnrolledCourses method in my_courses.dart
-Future<List<Map<String, dynamic>>> _fetchEnrolledCourses() async {
-  final enrollmentSnapshot = await FirebaseFirestore.instance
-      .collection('enrollments')
-      .where('studentId', isEqualTo: studentId)
-      .get();
-
-  List<Map<String, dynamic>> courses = [];
-
-  for (var enrollmentDoc in enrollmentSnapshot.docs) {
-    final enrollmentData = enrollmentDoc.data();
-    final courseId = enrollmentData['courseId'];
-
-    if (courseId != null) {
-      final courseDoc = await FirebaseFirestore.instance
-          .collection('courses')
-          .doc(courseId)
-          .get();
-
-      if (courseDoc.exists) {
-        final courseData = courseDoc.data()!;
-        final teacherRef = courseData['instructorId'] as DocumentReference?;
-
-        String teacherName = 'No Teacher';
-        if (teacherRef != null) {
-          final teacherDoc = await teacherRef.get();
-          if (teacherDoc.exists) {
-            teacherName = teacherDoc['name'] ?? 'No Teacher';
-          }
-        }
-
-        courses.add({
-          'courseName': courseData['name'] ?? 'No Name',
-          'timing': courseData['startTime'] != null && courseData['endTime'] != null
-              ? '${courseData['startTime']} - ${courseData['endTime']}'
-              : 'No Timing',
-          'teacherName': teacherName,
-          'category': courseData['category'] ?? 'No Category',
-          'fee': courseData['fee']?.toString() ?? 'No Fee',
-          'progress': enrollmentData['progress'] ?? 0,
-        });
-      }
-    }
-  }
-
-  return courses;
-}
+  List<LinearGradient> get _gradients => [
+    const LinearGradient(
+      colors: [Color(0xFF6448FE), Color(0xFF5FC6FF)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    const LinearGradient(
+      colors: [Color(0xFFFF9966), Color(0xFFFF5E62)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    const LinearGradient(
+      colors: [Color(0xFF00B09B), Color(0xFF96C93D)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    const LinearGradient(
+      colors: [Color(0xFFE44D26), Color(0xFFF16529)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('My Courses'),
+        title: const Text(
+          'My Courses',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        elevation: 0,
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _fetchEnrolledCourses(),
+      body: FutureBuilder<List<Course>>(
+        future: DashboardController().fetchEnrolledCourses(studentId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return _buildShimmerLoading();
           }
 
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error: ${snapshot.error}',
+                    style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            );
           }
 
           final courses = snapshot.data ?? [];
 
           if (courses.isEmpty) {
-            return const Center(child: Text('No enrolled courses.'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.school_outlined, 
+                    size: 64, 
+                    color: Colors.grey[400]
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No enrolled courses yet',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           return ListView.builder(
+            padding: const EdgeInsets.all(16),
             itemCount: courses.length,
             itemBuilder: (context, index) {
               final course = courses[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.purple.shade300, Colors.purple.shade700],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    title: Text(
-                      course['courseName'] ?? 'No Name',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Timing: ${course['timing']}',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                        Text(
-                          'Teacher: ${course['teacherName']}',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                        Text(
-                          'Category: ${course['category']}',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                        Text(
-                          'Fee: ₹${course['fee']}',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
+              return _buildCourseCard(course, _gradients[index % _gradients.length]);
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildCourseCard(Course course, LinearGradient gradient) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            // Navigate to course details
+            print('Navigate to details of ${course.name}');
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: gradient,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        course.icon,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            course.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Code: ${course.code}',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.play_circle_outline,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Continue Learning',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerLoading() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: ListView.builder(
+          itemCount: 3,
+          itemBuilder: (context, index) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              height: 140,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
