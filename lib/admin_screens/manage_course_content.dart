@@ -77,6 +77,12 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
           itemBuilder: (context, index) {
             final course = courses[index];
             final data = course.data() as Map<String, dynamic>;
+
+            // Handle instructorId type
+            final instructorId = data['instructorId'] is DocumentReference
+                ? (data['instructorId'] as DocumentReference).id
+                : data['instructorId'] as String?;
+
             // Fix type casting for startTime and endTime
             final startTime = data['startTime'] is Timestamp
                 ? (data['startTime'] as Timestamp).toDate()
@@ -85,13 +91,12 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
                 ? (data['endTime'] as Timestamp).toDate()
                 : null;
 
-            // Update _CourseCard instantiation
             return _CourseCard(
               courseId: course.id,
               name: data['name'] ?? 'No Name',
               courseCode: data['code'] ?? 'N/A',
               category: data['category'] ?? 'General',
-              instructorId: data['instructorId'],
+              instructorId: instructorId,
               startTime: startTime,
               endTime: endTime,
               onEdit: () => _showEditCourseDialog(context, course.id, data),
