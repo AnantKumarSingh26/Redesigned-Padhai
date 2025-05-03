@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../welcome_page.dart';
-import 'manage_user_accounts.dart'; 
+import 'manage_user_accounts.dart';
 import 'manage_course_content.dart';
-
+import 'performace.dart';
+import 'performance1.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -15,7 +16,7 @@ class AdminDashboard extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, 
+        automaticallyImplyLeading: false,
         title: const Text(
           'Admin Dashboard',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -67,20 +68,21 @@ class AdminDashboard extends StatelessWidget {
   Future<void> _confirmLogout(BuildContext context) async {
     final shouldLogout = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Logout'),
+            content: const Text('Are you sure you want to logout?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Logout'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
     );
 
     if (shouldLogout ?? false) {
@@ -130,17 +132,25 @@ class _AdminOptionCard extends StatelessWidget {
                 builder: (context) => const UserManagementScreen(),
               ),
             );
-          }
-          else if (option.title == 'Manage Course Catalog') {
+          } else if (option.title == 'Manage Course Catalog') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => CourseManagementScreen()),
+            );
+          } else if (option.title == 'Manage System Performance') {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => CourseManagementScreen(),
+                builder: (context) => const PerformanceScreen(),
               ),
             );
-          }
-           else {
-            print('Selected: ${option.title}');
+          } else if (option.title == 'Generate Reports') {
+           Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ReportsScreen(),
+              ),
+            );
           }
         },
         borderRadius: BorderRadius.circular(12),
@@ -212,7 +222,8 @@ final List<AdminOption> _adminOptions = [
   ),
   AdminOption(
     title: 'Generate Reports',
-    description: 'Generate detailed reports on users, courses, and system usage.',
+    description:
+        'Generate detailed reports on users, courses, and system usage.',
     icon: Icons.bar_chart,
     color: Colors.purple,
   ),
