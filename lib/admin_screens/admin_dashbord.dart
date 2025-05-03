@@ -16,7 +16,11 @@ class AdminDashboard extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: true, // Enable back button
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context), // Ensure back navigation
+        ),
         title: const Text(
           'Admin Dashboard',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -145,11 +149,9 @@ class _AdminOptionCard extends StatelessWidget {
               ),
             );
           } else if (option.title == 'Generate Reports') {
-           Navigator.push(
+            Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const ReportsScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const ReportsScreen()),
             );
           }
         },

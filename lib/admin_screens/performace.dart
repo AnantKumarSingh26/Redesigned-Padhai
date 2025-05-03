@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ReportsScreen extends StatelessWidget { // Renamed from PerformanceScreen
+class ReportsScreen extends StatelessWidget {
+  // Renamed from PerformanceScreen
   const ReportsScreen({super.key});
 
   @override
@@ -9,6 +10,10 @@ class ReportsScreen extends StatelessWidget { // Renamed from PerformanceScreen
     return Scaffold(
       appBar: AppBar(
         title: const Text('System Reports'), // Updated title
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context), // Ensure back navigation
+        ),
         elevation: 0,
         backgroundColor: Theme.of(context).primaryColor,
       ),
