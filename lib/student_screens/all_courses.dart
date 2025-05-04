@@ -110,10 +110,6 @@ class AllCourses extends StatelessWidget {
                             style: const TextStyle(color: Colors.white70),
                           ),
                           Text(
-                            'Timing: $timing',
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                          Text(
                             'Category: $category',
                             style: const TextStyle(color: Colors.white70),
                           ),

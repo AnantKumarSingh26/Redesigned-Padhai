@@ -20,9 +20,4 @@ class Course {
     this.startTime,
     this.endTime,
   });
-
-  String get timing =>
-      startTime != null && endTime != null
-          ? '$startTime - $endTime'
-          : 'No Timing';
 }

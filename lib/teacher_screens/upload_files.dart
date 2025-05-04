@@ -118,16 +118,17 @@ class _UploadFilesPageState extends State<UploadFilesPage> {
               title: const Text(
                 'Course Materials',
                 style: TextStyle(
-                  color: Color(0xFF1565C0),
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              backgroundColor: Colors.transparent,
+              backgroundColor: const Color.fromARGB(200, 3, 41, 255),
               elevation: 0,
               centerTitle: true,
+              iconTheme: const IconThemeData(color: Colors.white),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.add, color: Color(0xFF1565C0)),
+                  icon: const Icon(Icons.add, color: Colors.white),
                   onPressed: _isUploading ? null : _pickAndUploadFile,
                   tooltip: 'Upload Material',
                 ),

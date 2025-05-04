@@ -11,7 +11,10 @@ import 'dashboard_controller.dart';
 import 'course.dart';
 import 'enrolled_courses.dart';
 import 'package:padhai/student_screens/mock_stud.dart';
+import 'package:padhai/student_screens/query.dart';
 import 'package:padhai/student_screens/announcement_stud.dart';
+import 'package:convex_bottom_bar/convex_bottom_bar.dart';
+import 'package:padhai/student_screens/course_material.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -239,62 +242,6 @@ class _StudentDashboardState extends State<StudentDashboard> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () async {
-                          final user = FirebaseAuth.instance.currentUser;
-                          if (user != null) {
-                            final userDoc =
-                                await FirebaseFirestore.instance
-                                    .collection('users_roles')
-                                    .doc(user.uid)
-                                    .get();
-
-                            if (!context.mounted) return;
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => EnrolledCoursesPage(
-                                      studentId: user.uid,
-                                    ),
-                              ),
-                            );
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'View All',
-                                style: TextStyle(
-                                  color: Colors.blue[700],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 14,
-                                color: Colors.blue[700],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -360,8 +307,15 @@ class _StudentDashboardState extends State<StudentDashboard> {
                             color: Colors.transparent,
                             child: InkWell(
                               onTap: () {
-                                // Navigate to course details
-                                print('Navigate to details of ${course.name}');
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => CourseMaterialPage(
+                                          courseId: course.id,
+                                        ),
+                                  ),
+                                );
                               },
                               borderRadius: BorderRadius.circular(16),
                               child: Container(
@@ -437,15 +391,6 @@ class _StudentDashboardState extends State<StudentDashboard> {
                                                   fontSize: 14,
                                                 ),
                                               ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                'Timing: ${course.timing}',
-                                                style: TextStyle(
-                                                  color: Colors.white
-                                                      .withOpacity(0.8),
-                                                  fontSize: 14,
-                                                ),
-                                              ),
                                             ],
                                           ),
                                         ),
@@ -454,17 +399,22 @@ class _StudentDashboardState extends State<StudentDashboard> {
                                     const SizedBox(height: 20),
                                     Row(
                                       mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                          MainAxisAlignment.center,
                                       children: [
                                         Material(
                                           color: Colors.transparent,
                                           child: InkWell(
                                             onTap: () {
-                                              // Navigate to course content
-                                              print(
-                                                'Starting course: ${course.name}',
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder:
+                                                      (context) =>
+                                                          CourseMaterialPage(
+                                                            courseId: course.id,
+                                                          ),
+                                                ),
                                               );
-                                              // TODO: Add navigation to course content
                                             },
                                             borderRadius: BorderRadius.circular(
                                               20,
@@ -511,22 +461,6 @@ class _StudentDashboardState extends State<StudentDashboard> {
                                             ),
                                           ),
                                         ),
-                                        Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(
-                                              0.2,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            Icons.arrow_forward_ios,
-                                            color: Colors.white,
-                                            size: 16,
-                                          ),
-                                        ),
                                       ],
                                     ),
                                   ],
@@ -553,24 +487,20 @@ class _StudentDashboardState extends State<StudentDashboard> {
           },
           child: const Icon(Icons.edit),
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.assignment),
-              label: 'Announcement',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.announcement),
-              label: 'Mock',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.question_answer),
-              label: 'Query',
-            ),
+        bottomNavigationBar: ConvexAppBar(
+          style: TabStyle.react,
+          backgroundColor: Colors.blueAccent,
+          color: Colors.white,
+          activeColor: Colors.orange,
+          items: [
+            TabItem(icon: Icons.assignment, title: 'Announcement'),
+            TabItem(icon: Icons.announcement, title: 'Mock'),
+            TabItem(icon: Icons.question_answer, title: 'Query'),
           ],
+          initialActiveIndex: 0,
           onTap: (index) {
             if (index == 0) {
-               Navigator.push(
+              Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const StudentAnnouncementScreen(),
@@ -584,9 +514,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 ),
               );
             } else if (index == 2) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Query tapped! (feature coming soon)'),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StudentQueryPage(),
                 ),
               );
             }

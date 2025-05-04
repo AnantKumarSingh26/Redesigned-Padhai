@@ -104,7 +104,7 @@ class _TeacherAnnouncementScreenState extends State<TeacherAnnouncementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Announcements'),
+        title: const Text('Announcements',style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -112,6 +112,9 @@ class _TeacherAnnouncementScreenState extends State<TeacherAnnouncementScreen> {
             onPressed: isLoading ? null : () => _showAnnouncementDialog(),
           ),
         ],
+        backgroundColor: const Color.fromARGB(200, 3, 41, 255),
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream:

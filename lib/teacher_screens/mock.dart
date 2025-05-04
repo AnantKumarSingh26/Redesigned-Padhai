@@ -38,13 +38,14 @@ class _TeacherMockScreenState extends State<TeacherMockScreen> {
               title: const Text(
                 'My Mock Tests',
                 style: TextStyle(
-                  color: Color(0xFF1565C0),
+                  color: Color.fromARGB(255, 255, 255, 255),
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              backgroundColor: Colors.transparent,
+              backgroundColor: const Color.fromARGB(200, 3, 41, 255),
               elevation: 0,
               centerTitle: true,
+              iconTheme: IconThemeData(color: Colors.white),
             ),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
@@ -170,7 +171,7 @@ class _TeacherMockScreenState extends State<TeacherMockScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddMockDialog(context, user.email!),
+        onPressed: () => _showAddMockDialog(context, _auth.currentUser!.email!),
         backgroundColor: const Color(0xFF1565C0),
         child: const Icon(Icons.add),
         tooltip: 'Add Mock',
@@ -230,7 +231,13 @@ class MockQuestionsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final _firestore = FirebaseFirestore.instance;
     return Scaffold(
-      appBar: AppBar(title: Text('Questions: $subject')),
+      appBar: AppBar(
+        title: Text('Questions: $subject'),
+        backgroundColor: const Color.fromARGB(200, 3, 41, 255),
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
       body: StreamBuilder<QuerySnapshot>(
         stream:
             _firestore

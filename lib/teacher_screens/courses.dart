@@ -66,7 +66,15 @@ class _CoursesPageState extends State<CoursesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Assigned Courses'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text(
+          'Assigned Courses',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color.fromARGB(200, 3, 41, 255),
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
       body:
           instructorId == null
               ? const Center(child: CircularProgressIndicator())

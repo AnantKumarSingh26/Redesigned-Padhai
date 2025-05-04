@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:padhai/login.dart';
 import 'package:padhai/teacher_screens/mock.dart';
+import 'package:padhai/teacher_screens/teacher_queries.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:padhai/teacher_screens/courses.dart';
 import 'package:shimmer/shimmer.dart';
@@ -144,7 +145,8 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: const Color.fromARGB(200, 3, 41, 255),
+        iconTheme: IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
@@ -274,9 +276,12 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           Colors.teal.shade700,
                         ],
                         onTap:
-                            () => _showSnackbar(
+                            () => Navigator.push(
                               context,
-                              'Student Queries tapped',
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => const TeacherQueriesPage(),
+                              ),
                             ),
                       ),
                     ],

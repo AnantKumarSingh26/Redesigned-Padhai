@@ -18,10 +18,10 @@ class CourseManagementScreen extends StatefulWidget {
 }
 
 class _CourseManagementScreenState extends State<CourseManagementScreen> {
-  final CollectionReference _coursesCollection = 
-      FirebaseFirestore.instance.collection('courses');
-  final CollectionReference _usersCollection = 
-      FirebaseFirestore.instance.collection('users_roles');
+  final CollectionReference _coursesCollection = FirebaseFirestore.instance
+      .collection('courses');
+  final CollectionReference _usersCollection = FirebaseFirestore.instance
+      .collection('users_roles');
 
   @override
   Widget build(BuildContext context) {
@@ -35,17 +35,11 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
           centerTitle: true,
           bottom: const TabBar(
             isScrollable: true,
-            tabs: [
-              Tab(text: 'All Courses'),
-              Tab(text: 'Add New Course'),
-            ],
+            tabs: [Tab(text: 'All Courses'), Tab(text: 'Add New Course')],
           ),
         ),
         body: TabBarView(
-          children: [
-            _buildCoursesList(isTablet),
-            _buildAddCourseForm(),
-          ],
+          children: [_buildCoursesList(isTablet), _buildAddCourseForm()],
         ),
       ),
     );
@@ -79,17 +73,20 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
             final data = course.data() as Map<String, dynamic>;
 
             // Handle instructorId type
-            final instructorId = data['instructorId'] is DocumentReference
-                ? (data['instructorId'] as DocumentReference).id
-                : data['instructorId'] as String?;
+            final instructorId =
+                data['instructorId'] is DocumentReference
+                    ? (data['instructorId'] as DocumentReference).id
+                    : data['instructorId'] as String?;
 
             // Fix type casting for startTime and endTime
-            final startTime = data['startTime'] is Timestamp
-                ? (data['startTime'] as Timestamp).toDate()
-                : null;
-            final endTime = data['endTime'] is Timestamp
-                ? (data['endTime'] as Timestamp).toDate()
-                : null;
+            final startTime =
+                data['startTime'] is Timestamp
+                    ? (data['startTime'] as Timestamp).toDate()
+                    : null;
+            final endTime =
+                data['endTime'] is Timestamp
+                    ? (data['endTime'] as Timestamp).toDate()
+                    : null;
 
             return _CourseCard(
               courseId: course.id,
@@ -115,58 +112,56 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
       child: Column(
         children: [
           ElevatedButton(
-  onPressed: () => _showAddCourseDialog(context),
-  style: ElevatedButton.styleFrom(
-    padding: const EdgeInsets.all(16),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12), // Rounded corners for the button
-    ),
-    backgroundColor: Colors.transparent, // Make button background transparent
-    shadowColor: Colors.transparent, // Remove button shadow
-  ),
-  child: Ink(
-    decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        colors: gradientColors,
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      borderRadius: BorderRadius.circular(12), 
-    ),
-    child: Container(
-      padding: const EdgeInsets.all(16),
-      constraints: const BoxConstraints(minWidth: 88, minHeight: 36),
-      alignment: Alignment.center,
-      child: Column(
-        children: [
-          const Icon(
-            Icons.add,
-            size: 40,
-            color: Colors.white, 
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Add New Course',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold
+            onPressed: () => _showAddCourseDialog(context),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  12,
+                ), // Rounded corners for the button
+              ),
+              backgroundColor:
+                  Colors.transparent, // Make button background transparent
+              shadowColor: Colors.transparent, // Remove button shadow
             ),
-            textAlign: TextAlign.center,
+            child: Ink(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: gradientColors,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                constraints: const BoxConstraints(minWidth: 88, minHeight: 36),
+                alignment: Alignment.center,
+                child: Column(
+                  children: [
+                    const Icon(Icons.add, size: 40, color: Colors.white),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Add New Course',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                ),
+              ),
+            ),
           ),
-          const SizedBox(height: 10),
-        ],
-      ),
-    ),
-  ),
-),
 
           const SizedBox(height: 20),
         ],
       ),
     );
   }
-
 
   Future<void> _showAddCourseDialog(BuildContext context) async {
     final formKey = GlobalKey<FormState>();
@@ -180,295 +175,402 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
     List<Map<String, dynamic>> teachers = [];
 
     // Fetch teachers from Firestore
-    final teachersSnapshot = await _usersCollection.where('role', isEqualTo: 'teacher').get();
-    teachers = teachersSnapshot.docs.map((doc) {
-      final data = doc.data() as Map<String, dynamic>?;
-      return {
-        'id': doc.id,
-        'name': data != null ? data['name'] ?? 'Unknown Teacher' : 'Unknown Teacher',
-      };
-    }).toList();
+    final teachersSnapshot =
+        await _usersCollection.where('role', isEqualTo: 'teacher').get();
+    teachers =
+        teachersSnapshot.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>?;
+          return {
+            'id': doc.id,
+            'name':
+                data != null
+                    ? data['name'] ?? 'Unknown Teacher'
+                    : 'Unknown Teacher',
+          };
+        }).toList();
 
     await showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Add New Course'),
-            content: SingleChildScrollView(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: 'Course Name'),
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? 'Required field' : null,
-                      onSaved: (value) => name = value ?? '',
+      builder:
+          (context) => StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: const Text('Add New Course'),
+                content: SingleChildScrollView(
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'Course Name',
+                          ),
+                          validator:
+                              (value) =>
+                                  value?.isEmpty ?? true
+                                      ? 'Required field'
+                                      : null,
+                          onSaved: (value) => name = value ?? '',
+                        ),
+                        TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'Course Code (e.g., C1, C2)',
+                          ),
+                          validator:
+                              (value) =>
+                                  value?.isEmpty ?? true
+                                      ? 'Required field'
+                                      : null,
+                          onSaved: (value) => code = value ?? '',
+                        ),
+                        DropdownButtonFormField<String>(
+                          value: category,
+                          items:
+                              [
+                                'General',
+                                'Science',
+                                'Math',
+                                'Language',
+                                'Arts',
+                              ].map((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                          onChanged: (value) => category = value ?? 'General',
+                          decoration: const InputDecoration(
+                            labelText: 'Category',
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: instructorId,
+                          hint: const Text('Select Instructor'),
+                          items:
+                              teachers.map((teacher) {
+                                return DropdownMenuItem<String>(
+                                  value: teacher['id'],
+                                  child: Text(teacher['name']),
+                                );
+                              }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              instructorId = value;
+                            });
+                          },
+                          validator:
+                              (value) =>
+                                  value == null
+                                      ? 'Please select an instructor'
+                                      : null,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final selectedTime = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.now(),
+                            );
+                            if (selectedTime != null) {
+                              setState(() {
+                                startTime = selectedTime;
+                              });
+                            }
+                          },
+                          child: Text(
+                            startTime != null
+                                ? 'Start Time: ${startTime!.format(context)}'
+                                : 'Set Start Time',
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final selectedTime = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.now(),
+                            );
+                            if (selectedTime != null) {
+                              setState(() {
+                                endTime = selectedTime;
+                              });
+                            }
+                          },
+                          child: Text(
+                            endTime != null
+                                ? 'End Time: ${endTime!.format(context)}'
+                                : 'Set End Time',
+                          ),
+                        ),
+                        TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'Course Fee (₹)',
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator:
+                              (value) =>
+                                  value?.isEmpty ?? true
+                                      ? 'Required field'
+                                      : null,
+                          onSaved: (value) => fee = value ?? '',
+                        ),
+                      ],
                     ),
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: 'Course Code (e.g., C1, C2)'),
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? 'Required field' : null,
-                      onSaved: (value) => code = value ?? '',
-                    ),
-                    DropdownButtonFormField<String>(
-                      value: category,
-                      items: ['General', 'Science', 'Math', 'Language', 'Arts']
-                          .map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (value) => category = value ?? 'General',
-                      decoration: const InputDecoration(labelText: 'Category'),
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: instructorId,
-                      hint: const Text('Select Instructor'),
-                      items: teachers.map((teacher) {
-                        return DropdownMenuItem<String>(
-                          value: teacher['id'],
-                          child: Text(teacher['name']),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          instructorId = value;
-                        });
-                      },
-                      validator: (value) =>
-                          value == null ? 'Please select an instructor' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final selectedTime = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay.now(),
-                        );
-                        if (selectedTime != null) {
-                          setState(() {
-                            startTime = selectedTime;
-                          });
-                        }
-                      },
-                      child: Text(startTime != null
-                          ? 'Start Time: ${startTime!.format(context)}'
-                          : 'Set Start Time'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final selectedTime = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay.now(),
-                        );
-                        if (selectedTime != null) {
-                          setState(() {
-                            endTime = selectedTime;
-                          });
-                        }
-                      },
-                      child: Text(endTime != null
-                          ? 'End Time: ${endTime!.format(context)}'
-                          : 'Set End Time'),
-                    ),
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: 'Course Fee (₹)'),
-                      keyboardType: TextInputType.number,
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? 'Required field' : null,
-                      onSaved: (value) => fee = value ?? '',
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (formKey.currentState?.validate() ?? false) {
-                    formKey.currentState?.save();
-                    if (instructorId == null || startTime == null || endTime == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please complete all fields')),
-                      );
-                      return;
-                    }
-                    await _addCourse(context, name, code, category, instructorId!, startTime!, endTime!, fee);
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Course added successfully')),
-                      );
-                    }
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text('Add'),
-              ),
-            ],
-          );
-        },
-      ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (formKey.currentState?.validate() ?? false) {
+                        formKey.currentState?.save();
+                        if (instructorId == null ||
+                            startTime == null ||
+                            endTime == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please complete all fields'),
+                            ),
+                          );
+                          return;
+                        }
+                        await _addCourse(
+                          context,
+                          name,
+                          code,
+                          category,
+                          instructorId!,
+                          startTime!,
+                          endTime!,
+                          fee,
+                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Course added successfully'),
+                            ),
+                          );
+                        }
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: const Text('Add'),
+                  ),
+                ],
+              );
+            },
+          ),
     );
   }
 
-  Future<void> _showEditCourseDialog(BuildContext context, String courseId, Map<String, dynamic> data) async {
+  Future<void> _showEditCourseDialog(
+    BuildContext context,
+    String courseId,
+    Map<String, dynamic> data,
+  ) async {
     final formKey = GlobalKey<FormState>();
     String name = data['name'] ?? '';
     String code = data['code'] ?? '';
     String category = data['category'] ?? 'General';
     String? instructorId = data['instructorId'];
-    TimeOfDay? startTime = data['startTime'] is Timestamp
-        ? TimeOfDay.fromDateTime((data['startTime'] as Timestamp).toDate())
-        : null;
-    TimeOfDay? endTime = data['endTime'] is Timestamp
-        ? TimeOfDay.fromDateTime((data['endTime'] as Timestamp).toDate())
-        : null;
+    TimeOfDay? startTime =
+        data['startTime'] is Timestamp
+            ? TimeOfDay.fromDateTime((data['startTime'] as Timestamp).toDate())
+            : null;
+    TimeOfDay? endTime =
+        data['endTime'] is Timestamp
+            ? TimeOfDay.fromDateTime((data['endTime'] as Timestamp).toDate())
+            : null;
     String fee = data['fee'] ?? '';
     List<Map<String, dynamic>> teachers = [];
 
     // Fetch teachers from Firestore
-    final teachersSnapshot = await _usersCollection.where('role', isEqualTo: 'teacher').get();
-    teachers = teachersSnapshot.docs.map((doc) {
-      final data = doc.data() as Map<String, dynamic>?;
-      return {
-        'id': doc.id,
-        'name': data != null ? data['name'] ?? 'Unknown Teacher' : 'Unknown Teacher',
-      };
-    }).toList();
+    final teachersSnapshot =
+        await _usersCollection.where('role', isEqualTo: 'teacher').get();
+    teachers =
+        teachersSnapshot.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>?;
+          return {
+            'id': doc.id,
+            'name':
+                data != null
+                    ? data['name'] ?? 'Unknown Teacher'
+                    : 'Unknown Teacher',
+          };
+        }).toList();
 
     await showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Edit Course'),
-            content: SingleChildScrollView(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      initialValue: name,
-                      decoration: const InputDecoration(labelText: 'Course Name'),
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? 'Required field' : null,
-                      onSaved: (value) => name = value ?? '',
+      builder:
+          (context) => StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                title: const Text('Edit Course'),
+                content: SingleChildScrollView(
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          initialValue: name,
+                          decoration: const InputDecoration(
+                            labelText: 'Course Name',
+                          ),
+                          validator:
+                              (value) =>
+                                  value?.isEmpty ?? true
+                                      ? 'Required field'
+                                      : null,
+                          onSaved: (value) => name = value ?? '',
+                        ),
+                        TextFormField(
+                          initialValue: code,
+                          decoration: const InputDecoration(
+                            labelText: 'Course Code',
+                          ),
+                          validator:
+                              (value) =>
+                                  value?.isEmpty ?? true
+                                      ? 'Required field'
+                                      : null,
+                          onSaved: (value) => code = value ?? '',
+                        ),
+                        DropdownButtonFormField<String>(
+                          value: category,
+                          items:
+                              [
+                                'General',
+                                'Science',
+                                'Math',
+                                'Language',
+                                'Arts',
+                              ].map((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                          onChanged: (value) => category = value ?? 'General',
+                          decoration: const InputDecoration(
+                            labelText: 'Category',
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: instructorId,
+                          hint: const Text('Select Instructor'),
+                          items:
+                              teachers.map((teacher) {
+                                return DropdownMenuItem<String>(
+                                  value: teacher['id'],
+                                  child: Text(teacher['name']),
+                                );
+                              }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              instructorId = value;
+                            });
+                          },
+                          validator:
+                              (value) =>
+                                  value == null
+                                      ? 'Please select an instructor'
+                                      : null,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final selectedTime = await showTimePicker(
+                              context: context,
+                              initialTime: startTime ?? TimeOfDay.now(),
+                            );
+                            if (selectedTime != null) {
+                              setState(() {
+                                startTime = selectedTime;
+                              });
+                            }
+                          },
+                          child: Text(
+                            startTime != null
+                                ? 'Start Time: ${startTime!.format(context)}'
+                                : 'Set Start Time',
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final selectedTime = await showTimePicker(
+                              context: context,
+                              initialTime: endTime ?? TimeOfDay.now(),
+                            );
+                            if (selectedTime != null) {
+                              setState(() {
+                                endTime = selectedTime;
+                              });
+                            }
+                          },
+                          child: Text(
+                            endTime != null
+                                ? 'End Time: ${endTime!.format(context)}'
+                                : 'Set End Time',
+                          ),
+                        ),
+                        TextFormField(
+                          initialValue: fee,
+                          decoration: const InputDecoration(
+                            labelText: 'Course Fee (₹)',
+                          ),
+                          keyboardType: TextInputType.number,
+                          validator:
+                              (value) =>
+                                  value?.isEmpty ?? true
+                                      ? 'Required field'
+                                      : null,
+                          onSaved: (value) => fee = value ?? '',
+                        ),
+                      ],
                     ),
-                    TextFormField(
-                      initialValue: code,
-                      decoration: const InputDecoration(labelText: 'Course Code'),
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? 'Required field' : null,
-                      onSaved: (value) => code = value ?? '',
-                    ),
-                    DropdownButtonFormField<String>(
-                      value: category,
-                      items: ['General', 'Science', 'Math', 'Language', 'Arts']
-                          .map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (value) => category = value ?? 'General',
-                      decoration: const InputDecoration(labelText: 'Category'),
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: instructorId,
-                      hint: const Text('Select Instructor'),
-                      items: teachers.map((teacher) {
-                        return DropdownMenuItem<String>(
-                          value: teacher['id'],
-                          child: Text(teacher['name']),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          instructorId = value;
-                        });
-                      },
-                      validator: (value) =>
-                          value == null ? 'Please select an instructor' : null,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final selectedTime = await showTimePicker(
-                          context: context,
-                          initialTime: startTime ?? TimeOfDay.now(),
-                        );
-                        if (selectedTime != null) {
-                          setState(() {
-                            startTime = selectedTime;
-                          });
-                        }
-                      },
-                      child: Text(startTime != null
-                          ? 'Start Time: ${startTime!.format(context)}'
-                          : 'Set Start Time'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final selectedTime = await showTimePicker(
-                          context: context,
-                          initialTime: endTime ?? TimeOfDay.now(),
-                        );
-                        if (selectedTime != null) {
-                          setState(() {
-                            endTime = selectedTime;
-                          });
-                        }
-                      },
-                      child: Text(endTime != null
-                          ? 'End Time: ${endTime!.format(context)}'
-                          : 'Set End Time'),
-                    ),
-                    TextFormField(
-                      initialValue: fee,
-                      decoration: const InputDecoration(labelText: 'Course Fee (₹)'),
-                      keyboardType: TextInputType.number,
-                      validator: (value) =>
-                          value?.isEmpty ?? true ? 'Required field' : null,
-                      onSaved: (value) => fee = value ?? '',
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (formKey.currentState?.validate() ?? false) {
-                    formKey.currentState?.save();
-                    await _updateCourse(courseId, name, code, category, instructorId, startTime, endTime, fee);
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text('Update'),
-              ),
-            ],
-          );
-        },
-      ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (formKey.currentState?.validate() ?? false) {
+                        formKey.currentState?.save();
+                        await _updateCourse(
+                          courseId,
+                          name,
+                          code,
+                          category,
+                          instructorId,
+                          startTime,
+                          endTime,
+                          fee,
+                        );
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: const Text('Update'),
+                  ),
+                ],
+              );
+            },
+          ),
     );
   }
 
-  Future<void> _viewCourseMaterials(BuildContext context, String courseId) async {
+  Future<void> _viewCourseMaterials(
+    BuildContext context,
+    String courseId,
+  ) async {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -477,12 +579,25 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
     );
   }
 
-  Future<void> _addCourse(BuildContext context, String name, String code, String category, String instructorId, TimeOfDay startTime, TimeOfDay endTime, String fee) async {
+  Future<void> _addCourse(
+    BuildContext context,
+    String name,
+    String code,
+    String category,
+    String instructorId,
+    TimeOfDay startTime,
+    TimeOfDay endTime,
+    String fee,
+  ) async {
     try {
-      final startTimeString = '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
-      final endTimeString = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+      final startTimeString =
+          '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
+      final endTimeString =
+          '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
 
-      final instructorRef = _usersCollection.doc(instructorId); // Convert instructorId to DocumentReference
+      final instructorRef = _usersCollection.doc(
+        instructorId,
+      ); // Convert instructorId to DocumentReference
 
       final newCourseRef = await _coursesCollection.add({
         'name': name,
@@ -508,21 +623,32 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add course: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to add course: $e')));
       }
     }
   }
 
-  Future<void> _updateCourse(String courseId, String name, String code, String category, String? instructorId, TimeOfDay? startTime, TimeOfDay? endTime, String fee) async {
+  Future<void> _updateCourse(
+    String courseId,
+    String name,
+    String code,
+    String category,
+    String? instructorId,
+    TimeOfDay? startTime,
+    TimeOfDay? endTime,
+    String fee,
+  ) async {
     try {
-      final startTimeString = startTime != null
-          ? '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}'
-          : null;
-      final endTimeString = endTime != null
-          ? '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}'
-          : null;
+      final startTimeString =
+          startTime != null
+              ? '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}'
+              : null;
+      final endTimeString =
+          endTime != null
+              ? '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}'
+              : null;
 
       await _coursesCollection.doc(courseId).update({
         'name': name,
@@ -537,9 +663,9 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
         const SnackBar(content: Text('Course updated successfully')),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update course: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to update course: $e')));
     }
   }
 
@@ -550,9 +676,9 @@ class _CourseManagementScreenState extends State<CourseManagementScreen> {
         const SnackBar(content: Text('Course deleted successfully')),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to delete course: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to delete course: $e')));
     }
   }
 }
@@ -632,7 +758,10 @@ class _CourseCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       'Live: ${DateFormat.jm().format(startTime!)} - ${DateFormat.jm().format(endTime!)}',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -649,31 +778,6 @@ class _CourseCard extends StatelessWidget {
                     icon: const Icon(Icons.delete, color: Colors.black),
                     onPressed: onDelete,
                     tooltip: 'Delete',
-                  ),
-                  MaterialButton(
-                    onPressed: onViewMaterials,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.all(8),
-                    child: Ink(
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: gradientColors,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Container(
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: const Text(
-                          'Materials',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -723,23 +827,22 @@ class CourseMaterialsScreen extends StatelessWidget {
 
   Widget _buildMaterialsList(String type) {
     return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('courses')
-          .doc(courseId)
-          .snapshots(),
+      stream:
+          FirebaseFirestore.instance
+              .collection('courses')
+              .doc(courseId)
+              .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
 
         final materials = snapshot.data!['materials'] as List<dynamic>? ?? [];
-        final filteredMaterials = materials.where((material) => 
-            material['type'] == type).toList();
+        final filteredMaterials =
+            materials.where((material) => material['type'] == type).toList();
 
         if (filteredMaterials.isEmpty) {
-          return const Center(
-            child: Text('No materials found'),
-          );
+          return const Center(child: Text('No materials found'));
         }
 
         return ListView.builder(
@@ -747,12 +850,15 @@ class CourseMaterialsScreen extends StatelessWidget {
           itemBuilder: (context, index) {
             final material = filteredMaterials[index];
             return ListTile(
-              leading: Icon(type == 'video' ? Icons.video_library : Icons.picture_as_pdf),
+              leading: Icon(
+                type == 'video' ? Icons.video_library : Icons.picture_as_pdf,
+              ),
               title: Text(material['title'] ?? 'Untitled'),
               subtitle: Text(material['url'] ?? 'No URL'),
               trailing: IconButton(
                 icon: const Icon(Icons.delete),
-                onPressed: () => _deleteMaterial(context, courseId, material['id']),
+                onPressed:
+                    () => _deleteMaterial(context, courseId, material['id']),
               ),
             );
           },
@@ -763,10 +869,11 @@ class CourseMaterialsScreen extends StatelessWidget {
 
   Widget _buildMockTestsList() {
     return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('courses')
-          .doc(courseId)
-          .snapshots(),
+      stream:
+          FirebaseFirestore.instance
+              .collection('courses')
+              .doc(courseId)
+              .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -775,9 +882,7 @@ class CourseMaterialsScreen extends StatelessWidget {
         final mockTests = snapshot.data!['mockTests'] as List<dynamic>? ?? [];
 
         if (mockTests.isEmpty) {
-          return const Center(
-            child: Text('No mock tests found'),
-          );
+          return const Center(child: Text('No mock tests found'));
         }
 
         return ListView.builder(
@@ -785,21 +890,23 @@ class CourseMaterialsScreen extends StatelessWidget {
           itemBuilder: (context, index) {
             final testId = mockTests[index];
             return FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection('mock_tests')
-                  .doc(testId)
-                  .get(),
+              future:
+                  FirebaseFirestore.instance
+                      .collection('mock_tests')
+                      .doc(testId)
+                      .get(),
               builder: (context, testSnapshot) {
                 if (!testSnapshot.hasData) {
-                  return const ListTile(
-                    title: Text('Loading...'),
-                  );
+                  return const ListTile(title: Text('Loading...'));
                 }
-                final testData = testSnapshot.data!.data() as Map<String, dynamic>? ?? {};
+                final testData =
+                    testSnapshot.data!.data() as Map<String, dynamic>? ?? {};
                 return ListTile(
                   leading: const Icon(Icons.quiz),
                   title: Text(testData['title'] ?? 'Untitled Test'),
-                  subtitle: Text('Questions: ${testData['questions']?.length ?? 0}'),
+                  subtitle: Text(
+                    'Questions: ${testData['questions']?.length ?? 0}',
+                  ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () => _removeMockTest(context, courseId, testId),
@@ -813,7 +920,10 @@ class CourseMaterialsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showAddMaterialDialog(BuildContext context, String courseId) async {
+  Future<void> _showAddMaterialDialog(
+    BuildContext context,
+    String courseId,
+  ) async {
     final formKey = GlobalKey<FormState>();
     String title = '';
     String url = '';
@@ -821,62 +931,70 @@ class CourseMaterialsScreen extends StatelessWidget {
 
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add New Material'),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Title'),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Required field' : null,
-                onSaved: (value) => title = value ?? '',
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Add New Material'),
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    decoration: const InputDecoration(labelText: 'Title'),
+                    validator:
+                        (value) =>
+                            value?.isEmpty ?? true ? 'Required field' : null,
+                    onSaved: (value) => title = value ?? '',
+                  ),
+                  TextFormField(
+                    decoration: const InputDecoration(labelText: 'URL'),
+                    validator:
+                        (value) =>
+                            value?.isEmpty ?? true ? 'Required field' : null,
+                    onSaved: (value) => url = value ?? '',
+                  ),
+                  DropdownButtonFormField<String>(
+                    value: type,
+                    items:
+                        ['video', 'pdf'].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value.toUpperCase()),
+                          );
+                        }).toList(),
+                    onChanged: (value) => type = value ?? 'video',
+                    decoration: const InputDecoration(labelText: 'Type'),
+                  ),
+                ],
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'URL'),
-                validator: (value) =>
-                    value?.isEmpty ?? true ? 'Required field' : null,
-                onSaved: (value) => url = value ?? '',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
               ),
-              DropdownButtonFormField<String>(
-                value: type,
-                items: ['video', 'pdf']
-                    .map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value.toUpperCase()),
-                  );
-                }).toList(),
-                onChanged: (value) => type = value ?? 'video',
-                decoration: const InputDecoration(labelText: 'Type'),
+              ElevatedButton(
+                onPressed: () async {
+                  if (formKey.currentState?.validate() ?? false) {
+                    formKey.currentState?.save();
+                    await _addMaterial(context, courseId, title, url, type);
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('Add'),
               ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (formKey.currentState?.validate() ?? false) {
-                formKey.currentState?.save();
-                await _addMaterial(context, courseId, title, url, type);
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('Add'),
-          ),
-        ],
-      ),
     );
   }
 
   Future<void> _addMaterial(
-      BuildContext context, String courseId, String title, String url, String type) async {
+    BuildContext context,
+    String courseId,
+    String title,
+    String url,
+    String type,
+  ) async {
     try {
       final newMaterial = {
         'id': DateTime.now().millisecondsSinceEpoch.toString(),
@@ -897,18 +1015,23 @@ class CourseMaterialsScreen extends StatelessWidget {
         const SnackBar(content: Text('Material added successfully')),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to add material: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to add material: $e')));
     }
   }
 
-  Future<void> _deleteMaterial(BuildContext context, String courseId, String materialId) async {
+  Future<void> _deleteMaterial(
+    BuildContext context,
+    String courseId,
+    String materialId,
+  ) async {
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('courses')
-          .doc(courseId)
-          .get();
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('courses')
+              .doc(courseId)
+              .get();
 
       final materials = doc.data()?['materials'] as List<dynamic>? ?? [];
       final materialToRemove = materials.firstWhere(
@@ -931,9 +1054,9 @@ class CourseMaterialsScreen extends StatelessWidget {
         }
       } else {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Material not found')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Material not found')));
         }
       }
     } catch (e) {
@@ -945,7 +1068,11 @@ class CourseMaterialsScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _removeMockTest(BuildContext context, String courseId, String testId) async {
+  Future<void> _removeMockTest(
+    BuildContext context,
+    String courseId,
+    String testId,
+  ) async {
     try {
       await FirebaseFirestore.instance
           .collection('courses')
@@ -953,14 +1080,14 @@ class CourseMaterialsScreen extends StatelessWidget {
           .update({
             'mockTests': FieldValue.arrayRemove([testId]),
           });
- 
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Mock test removed from course')),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to remove mock test: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to remove mock test: $e')));
     }
   }
 }
