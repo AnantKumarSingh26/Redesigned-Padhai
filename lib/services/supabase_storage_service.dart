@@ -2,46 +2,55 @@ import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseStorageService {
-  final SupabaseClient _client;
+  final SupabaseClient _client = Supabase.instance.client;
 
-  SupabaseStorageService()
-      : _client = SupabaseClient(
-          'https://zosqvsxkchwuiuyyoyvg.supabase.co',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpvc3F2c3hrY2h3dWl1eXlveXZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU0NjU5NDEsImV4cCI6MjA2MTA0MTk0MX0.BWB4DWzGj6mqJQ7GAIbNiXoXo-aV6KWMQC3jvq1umTY',
-        );
-
-  Future<String?> uploadMaterial(File file, String fileName) async {
+  Future<String?> uploadFile(
+    File file,
+    String bucketName,
+    String fileName,
+  ) async {
     try {
-      final response = await _client.storage.from('materials').uploadBinary(fileName, await file.readAsBytes());
+      final response = await _client.storage
+          .from(bucketName)
+          .upload(fileName, file);
       if (response.isEmpty) {
-        return _client.storage.from('materials').getPublicUrl(fileName);
-      } else {
-        throw Exception('Failed to upload file: $response');
+        throw Exception('File upload failed.');
       }
+      // Get the public URL of the uploaded file
+      final publicUrl = _client.storage.from(bucketName).getPublicUrl(fileName);
+      return publicUrl;
     } catch (e) {
-      print('Error uploading material: $e');
+      print('Error uploading file: $e');
       return null;
     }
   }
 
-  Future<List<String>> listMaterials() async {
+  Future<List<String>> listFiles(String bucketName) async {
     try {
-      final response = await _client.storage.from('materials').list();
-      return response.map((item) => _client.storage.from('materials').getPublicUrl(item.name)).toList();
+      final response = await _client.storage.from(bucketName).list();
+      if (response.isEmpty) {
+        throw Exception('No files found in the bucket.');
+      }
+      return response.map((file) => file.name).toList();
     } catch (e) {
-      print('Error listing materials: $e');
+      print('Error listing files: $e');
       return [];
     }
   }
 
-  Future<void> deleteMaterial(String fileName) async {
+  Future<bool> deleteFile(String bucketName, String fileUrl) async {
     try {
-      final response = await _client.storage.from('materials').remove([fileName]);
-      if (response.isNotEmpty) {
-        throw Exception('Failed to delete file: $response');
+      final fileName = fileUrl.split('/').last;
+      final response = await _client.storage.from(bucketName).remove([
+        fileName,
+      ]);
+      if (response.isEmpty) {
+        throw Exception('File deletion failed.');
       }
+      return true;
     } catch (e) {
-      print('Error deleting material: $e');
+      print('Error deleting file: $e');
+      return false;
     }
   }
 }
