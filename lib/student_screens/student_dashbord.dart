@@ -11,6 +11,7 @@ import 'dashboard_controller.dart';
 import 'course.dart';
 import 'enrolled_courses.dart';
 import 'package:padhai/student_screens/mock_stud.dart';
+import 'package:padhai/student_screens/announcement_stud.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -569,9 +570,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
           ],
           onTap: (index) {
             if (index == 0) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Announcement tapped! (feature coming soon)'),
+               Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StudentAnnouncementScreen(),
                 ),
               );
             } else if (index == 1) {
