@@ -10,6 +10,7 @@ import 'course_horizontal_list.dart';
 import 'dashboard_controller.dart';
 import 'course.dart';
 import 'enrolled_courses.dart';
+import 'package:padhai/student_screens/mock_stud.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -29,7 +30,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
   bool isLoading = true;
   String errorMessage = '';
   int tokens = 0;
-  List<Map<String, dynamic>> courseEnrollments = []; // Store enrollments for each course
+  List<Map<String, dynamic>> courseEnrollments =
+      []; // Store enrollments for each course
 
   @override
   void initState() {
@@ -49,21 +51,23 @@ class _StudentDashboardState extends State<StudentDashboard> {
       // Fetch enrollments for each enrolled course
       List<Map<String, dynamic>> enrollments = [];
       for (var course in coursesData['enrolledCourses']) {
-        final courseDoc = await FirebaseFirestore.instance
-            .collection('courses')
-            .doc(course.id)
-            .collection('enrollments')
-            .get();
+        final courseDoc =
+            await FirebaseFirestore.instance
+                .collection('courses')
+                .doc(course.id)
+                .collection('enrollments')
+                .get();
 
         enrollments.add({
           'courseName': course.name,
-          'enrollments': courseDoc.docs.map((doc) {
-            final data = doc.data();
-            return {
-              'name': data['name'], // Only fetch 'name'
-              // Ensure 'progress' or any non-existent field is not accessed
-            };
-          }).toList(),
+          'enrollments':
+              courseDoc.docs.map((doc) {
+                final data = doc.data();
+                return {
+                  'name': data['name'], // Only fetch 'name'
+                  // Ensure 'progress' or any non-existent field is not accessed
+                };
+              }).toList(),
         });
       }
 
@@ -149,7 +153,12 @@ class _StudentDashboardState extends State<StudentDashboard> {
                         ),
                       ],
                       border: Border.all(
-                        color: const Color.fromARGB(255, 64, 77, 255).withOpacity(0.8),
+                        color: const Color.fromARGB(
+                          255,
+                          64,
+                          77,
+                          255,
+                        ).withOpacity(0.8),
                         width: 2,
                       ),
                       color: Colors.transparent,
@@ -225,10 +234,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   children: [
                     Text(
                       'My Courses',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(fontWeight: FontWeight.w600),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     Material(
                       color: Colors.transparent,
@@ -236,19 +244,21 @@ class _StudentDashboardState extends State<StudentDashboard> {
                         onTap: () async {
                           final user = FirebaseAuth.instance.currentUser;
                           if (user != null) {
-                            final userDoc = await FirebaseFirestore.instance
-                                .collection('users_roles')
-                                .doc(user.uid)
-                                .get();
-                            
+                            final userDoc =
+                                await FirebaseFirestore.instance
+                                    .collection('users_roles')
+                                    .doc(user.uid)
+                                    .get();
+
                             if (!context.mounted) return;
-                            
+
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => EnrolledCoursesPage(
-                                  studentId: user.uid,
-                                ),
+                                builder:
+                                    (context) => EnrolledCoursesPage(
+                                      studentId: user.uid,
+                                    ),
                               ),
                             );
                           }
@@ -307,188 +317,225 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     )
                     : enrolledCourses.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.school_outlined, 
-                              size: 64, 
-                              color: Colors.grey[400]
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.school_outlined,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No enrolled courses yet',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
                             ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No enrolled courses yet',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
+                          ),
+                        ],
+                      ),
+                    )
                     : ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: enrolledCourses.length,
-                        itemBuilder: (context, index) {
-                          final course = enrolledCourses[index];
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: enrolledCourses.length,
+                      itemBuilder: (context, index) {
+                        final course = enrolledCourses[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                // Navigate to course details
+                                print('Navigate to details of ${course.name}');
+                              },
                               borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  // Navigate to course details
-                                  print('Navigate to details of ${course.name}');
-                                },
-                                borderRadius: BorderRadius.circular(16),
-                                child: Container(
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: index % 4 == 0
-                                          ? [const Color(0xFF6448FE), const Color(0xFF5FC6FF)]
-                                          : index % 4 == 1
-                                              ? [const Color(0xFFFF9966), const Color(0xFFFF5E62)]
-                                              : index % 4 == 2
-                                                  ? [const Color(0xFF00B09B), const Color(0xFF96C93D)]
-                                                  : [const Color(0xFFE44D26), const Color(0xFFF16529)],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors:
+                                        index % 4 == 0
+                                            ? [
+                                              const Color(0xFF6448FE),
+                                              const Color(0xFF5FC6FF),
+                                            ]
+                                            : index % 4 == 1
+                                            ? [
+                                              const Color(0xFFFF9966),
+                                              const Color(0xFFFF5E62),
+                                            ]
+                                            : index % 4 == 2
+                                            ? [
+                                              const Color(0xFF00B09B),
+                                              const Color(0xFF96C93D),
+                                            ]
+                                            : [
+                                              const Color(0xFFE44D26),
+                                              const Color(0xFFF16529),
+                                            ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(12),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(0.2),
-                                              borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(
+                                              0.2,
                                             ),
-                                            child: Icon(
-                                              course.icon,
-                                              color: Colors.white,
-                                              size: 24,
+                                            borderRadius: BorderRadius.circular(
+                                              12,
                                             ),
                                           ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  course.name,
-                                                  style: const TextStyle(
+                                          child: Icon(
+                                            course.icon,
+                                            color: Colors.white,
+                                            size: 24,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                course.name,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Code: ${course.code}',
+                                                style: TextStyle(
+                                                  color: Colors.white
+                                                      .withOpacity(0.8),
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Timing: ${course.timing}',
+                                                style: TextStyle(
+                                                  color: Colors.white
+                                                      .withOpacity(0.8),
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            onTap: () {
+                                              // Navigate to course content
+                                              print(
+                                                'Starting course: ${course.name}',
+                                              );
+                                              // TODO: Add navigation to course content
+                                            },
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 8,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withOpacity(
+                                                  0.2,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                border: Border.all(
+                                                  color: Colors.white
+                                                      .withOpacity(0.3),
+                                                  width: 1,
+                                                ),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Icon(
+                                                    Icons.play_circle_outline,
                                                     color: Colors.white,
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
+                                                    size: 20,
                                                   ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  'Code: ${course.code}',
-                                                  style: TextStyle(
-                                                    color: Colors.white.withOpacity(0.8),
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  'Timing: ${course.timing}',
-                                                  style: TextStyle(
-                                                    color: Colors.white.withOpacity(0.8),
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 20),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Material(
-                                            color: Colors.transparent,
-                                            child: InkWell(
-                                              onTap: () {
-                                                // Navigate to course content
-                                                print('Starting course: ${course.name}');
-                                                // TODO: Add navigation to course content
-                                              },
-                                              borderRadius: BorderRadius.circular(20),
-                                              child: Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 16,
-                                                  vertical: 8,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white.withOpacity(0.2),
-                                                  borderRadius: BorderRadius.circular(20),
-                                                  border: Border.all(
-                                                    color: Colors.white.withOpacity(0.3),
-                                                    width: 1,
-                                                  ),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.play_circle_outline,
-                                                      color: Colors.white,
-                                                      size: 20,
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    'Continue Learning',
+                                                    style: TextStyle(
+                                                      color: Colors.white
+                                                          .withOpacity(0.9),
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                     ),
-                                                    const SizedBox(width: 8),
-                                                    Text(
-                                                      'Continue Learning',
-                                                      style: TextStyle(
-                                                        color: Colors.white.withOpacity(0.9),
-                                                        fontSize: 14,
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ),
-                                          Container(
-                                            padding: const EdgeInsets.all(8),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(0.2),
-                                              borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(
+                                              0.2,
                                             ),
-                                            child: const Icon(
-                                              Icons.arrow_forward_ios,
-                                              color: Colors.white,
-                                              size: 16,
+                                            borderRadius: BorderRadius.circular(
+                                              12,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                          child: const Icon(
+                                            Icons.arrow_forward_ios,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
+                    ),
                 const SizedBox(height: 32),
                 const AllCourses(),
                 const SizedBox(height: 32),
@@ -504,6 +551,44 @@ class _StudentDashboardState extends State<StudentDashboard> {
             );
           },
           child: const Icon(Icons.edit),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.assignment),
+              label: 'Announcement',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.announcement),
+              label: 'Mock',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.question_answer),
+              label: 'Query',
+            ),
+          ],
+          onTap: (index) {
+            if (index == 0) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Announcement tapped! (feature coming soon)'),
+                ),
+              );
+            } else if (index == 1) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const StudentMockListScreen(),
+                ),
+              );
+            } else if (index == 2) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Query tapped! (feature coming soon)'),
+                ),
+              );
+            }
+          },
         ),
       ),
     );
