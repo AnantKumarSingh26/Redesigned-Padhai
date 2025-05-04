@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:padhai/login.dart';
+import 'package:padhai/teacher_screens/mock.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:padhai/teacher_screens/courses.dart';
 import 'package:shimmer/shimmer.dart';
@@ -213,7 +214,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           description: 'Create and evaluate mock tests.',
                           color: Colors.green,
                           gradientColors: [Colors.green.shade300, Colors.green.shade700],
-                          onTap: () => _showSnackbar(context, 'Mock Tests tapped'),
+                          onTap: () =>Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const TeacherMockScreen()),
+                          ),
                         ),
                         _DashboardCard(
                           icon: Icons.assessment,
